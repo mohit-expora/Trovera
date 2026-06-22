@@ -1,0 +1,112 @@
+{
+  "common": {
+    "actions": {
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "create": "Créer",
+      "search": "Rechercher",
+      "filter": "Filtrer",
+      "loading": "Chargement...",
+      "submit": "Soumettre",
+      "confirm": "Confirmer",
+      "close": "Fermer",
+      "back": "Retour",
+      "next": "Suivant",
+      "view": "Voir",
+      "add": "Ajouter"
+    },
+    "errors": {
+      "generic": "Une erreur s'est produite. Veuillez réessayer.",
+      "notFound": "Non trouvé.",
+      "forbidden": "Accès refusé.",
+      "networkError": "Erreur réseau."
+    },
+    "noData": "Aucune donnée disponible",
+    "language": "Langue"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenue sur Trovera",
+      "subtitle": "Connectez-vous à votre compte bibliothèque",
+      "emailLabel": "Email",
+      "passwordLabel": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "signIn": "Se connecter",
+      "noAccount": "Pas de compte ?",
+      "signUp": "S'inscrire",
+      "orContinueWith": "Ou continuer avec"
+    },
+    "signup": {
+      "title": "Créer votre compte",
+      "subtitle": "Rejoignez Trovera Library aujourd'hui",
+      "createAccount": "Créer un compte",
+      "alreadyHaveAccount": "Déjà un compte ?"
+    },
+    "google": { "signInWith": "Se connecter avec Google" },
+    "logout": "Se déconnecter"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "books": "Livres",
+    "transactions": "Transactions",
+    "members": "Membres",
+    "fines": "Amendes",
+    "roles": "Rôles et Permissions",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "stats": {
+      "totalBooks": "Total des livres",
+      "activeMembers": "Membres actifs",
+      "overdueBooks": "Livres en retard",
+      "pendingFines": "Amendes en attente"
+    }
+  },
+  "books": {
+    "title": "Livres",
+    "addBook": "Ajouter un livre",
+    "editBook": "Modifier le livre",
+    "fields": {
+      "title": "Titre",
+      "author": "Auteur",
+      "isbn": "ISBN",
+      "category": "Catégorie",
+      "language": "Langue",
+      "description": "Description",
+      "quantity": "Quantité totale",
+      "available": "Disponible"
+    },
+    "status": {
+      "available": "Disponible",
+      "checkedOut": "Emprunté",
+      "outOfStock": "En rupture de stock"
+    },
+    "noBooks": "Aucun livre trouvé"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "issueBook": "Emprunter un livre",
+    "returnBook": "Retourner un livre",
+    "status": {
+      "issued": "Emprunté",
+      "returned": "Retourné",
+      "overdue": "En retard",
+      "lost": "Perdu"
+    }
+  },
+  "fines": {
+    "title": "Amendes",
+    "status": { "pending": "En attente", "paid": "Payé", "waived": "Annulé" }
+  },
+  "members": {
+    "title": "Membres",
+    "roles": { "super_admin": "Super Administrateur", "librarian": "Bibliothécaire", "member": "Membre" }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "saveChanges": "Enregistrer les modifications"
+  }
+}

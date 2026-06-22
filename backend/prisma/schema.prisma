@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProvider {
+  local
+  google
+}
+
+enum UserRole {
+  super_admin
+  librarian
+  member
+}
+
+enum TransactionStatus {
+  issued
+  returned
+  overdue
+  lost
+}
+
+enum FineStatus {
+  pending
+  paid
+  waived
+}
+
+enum ErrorSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+model User {
+  id                String       @id @default(uuid())
+  email             String       @unique
+  full_name         String
+  password_hash     String?
+  avatar_url        String?
+  auth_provider     AuthProvider @default(local)
+  google_id         String?      @unique
+  role              UserRole     @default(member)
+  is_active         Boolean      @default(true)
+  is_email_verified Boolean      @default(false)
+  phone             String?
+  address           String?
+  membership_id     String?      @unique
+  deleted_at        DateTime?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+
+  verification_tokens EmailVerificationToken[]
+  refresh_tokens      RefreshToken[]
+  transactions        Transaction[]            @relation("MemberTransactions")
+  fines               Fine[]                   @relation("MemberFines")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model EmailVerificationToken {
+  id         String    @id @default(uuid())
+  user_id    String
+  token      String    @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([user_id])
+  @@map("email_verification_tokens")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  user_id     String
+  token_hash  String    @unique
+  device_info String?
+  ip_address  String?
+  expires_at  DateTime
+  revoked_at  DateTime?
+  created_at  DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token_hash])
+  @@index([user_id])
+  @@map("refresh_tokens")
+}
+
+model BookCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  books Book[]
+
+  @@map("book_categories")
+}
+
+model Book {
+  id                 String    @id @default(uuid())
+  title              String
+  isbn               String?   @unique
+  author             String
+  publisher          String?
+  published_year     Int?
+  category_id        String?
+  language           String    @default("en")
+  description        String?
+  cover_image_url    String?
+  total_quantity     Int       @default(1)
+  available_quantity Int       @default(1)
+  shelf_location     String?
+  tags               String[]
+  is_active          Boolean   @default(true)
+  created_by         String?
+  deleted_at         DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  category     BookCategory? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  transactions Transaction[]
+
+  @@index([category_id])
+  @@index([language])
+  @@map("books")
+}
+
+model Transaction {
+  id          String            @id @default(uuid())
+  book_id     String
+  member_id   String
+  issued_by   String?
+  returned_to String?
+  status      TransactionStatus @default(issued)
+  issued_at   DateTime
+  due_date    DateTime
+  returned_at DateTime?
+  notes       String?
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
+
+  book   Book   @relation(fields: [book_id], references: [id], onDelete: Restrict)
+  member User   @relation("MemberTransactions", fields: [member_id], references: [id], onDelete: Restrict)
+  fines  Fine[]
+
+  @@index([book_id])
+  @@index([member_id])
+  @@index([status])
+  @@map("transactions")
+}
+
+model Fine {
+  id             String     @id @default(uuid())
+  transaction_id String
+  member_id      String
+  amount         Decimal    @db.Decimal(10, 2)
+  per_day_rate   Decimal    @db.Decimal(6, 2)
+  days_overdue   Int
+  status         FineStatus @default(pending)
+  paid_at        DateTime?
+  waived_by      String?
+  waived_at      DateTime?
+  waive_reason   String?
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  transaction Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  member      User        @relation("MemberFines", fields: [member_id], references: [id], onDelete: Restrict)
+
+  @@index([member_id])
+  @@index([status])
+  @@index([transaction_id])
+  @@map("fines")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  description String?
+  resource    String?
+  action      String?
+
+  @@map("permissions")
+}
+
+model ErrorLog {
+  id          String        @id @default(uuid())
+  error_code  String?
+  severity    ErrorSeverity @default(medium)
+  message     String
+  stack_trace String?
+  context     Json?
+  user_id     String?
+  ip_address  String?
+  request_id  String?
+  resolved    Boolean       @default(false)
+  created_at  DateTime      @default(now())
+
+  @@map("error_logs")
+}

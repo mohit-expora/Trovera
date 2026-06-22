@@ -1,0 +1,113 @@
+{
+  "common": {
+    "actions": {
+      "save": "सहेजें",
+      "cancel": "रद्द करें",
+      "delete": "हटाएं",
+      "edit": "संपादित करें",
+      "create": "बनाएं",
+      "search": "खोजें",
+      "filter": "फ़िल्टर",
+      "export": "निर्यात",
+      "loading": "लोड हो रहा है...",
+      "submit": "जमा करें",
+      "confirm": "पुष्टि करें",
+      "close": "बंद करें",
+      "back": "वापस",
+      "next": "अगला",
+      "view": "देखें",
+      "add": "जोड़ें"
+    },
+    "errors": {
+      "generic": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+      "notFound": "नहीं मिला।",
+      "forbidden": "प्रवेश वर्जित।",
+      "networkError": "नेटवर्क त्रुटि।"
+    },
+    "noData": "कोई डेटा उपलब्ध नहीं",
+    "language": "भाषा"
+  },
+  "auth": {
+    "login": {
+      "title": "Trovera में आपका स्वागत है",
+      "subtitle": "अपने लाइब्रेरी खाते में साइन इन करें",
+      "emailLabel": "ईमेल",
+      "passwordLabel": "पासवर्ड",
+      "forgotPassword": "पासवर्ड भूल गए?",
+      "signIn": "साइन इन करें",
+      "noAccount": "खाता नहीं है?",
+      "signUp": "साइन अप करें",
+      "orContinueWith": "या जारी रखें"
+    },
+    "signup": {
+      "title": "अपना खाता बनाएं",
+      "subtitle": "आज Trovera Library से जुड़ें",
+      "createAccount": "खाता बनाएं",
+      "alreadyHaveAccount": "पहले से खाता है?"
+    },
+    "google": { "signInWith": "Google से साइन इन करें" },
+    "logout": "साइन आउट"
+  },
+  "navigation": {
+    "dashboard": "डैशबोर्ड",
+    "books": "किताबें",
+    "transactions": "लेनदेन",
+    "members": "सदस्य",
+    "fines": "जुर्माना",
+    "roles": "भूमिकाएं और अनुमतियां",
+    "settings": "सेटिंग्स"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "stats": {
+      "totalBooks": "कुल किताबें",
+      "activeMembers": "सक्रिय सदस्य",
+      "overdueBooks": "अतिदेय किताबें",
+      "pendingFines": "लंबित जुर्माना"
+    }
+  },
+  "books": {
+    "title": "किताबें",
+    "addBook": "किताब जोड़ें",
+    "editBook": "किताब संपादित करें",
+    "fields": {
+      "title": "शीर्षक",
+      "author": "लेखक",
+      "isbn": "ISBN",
+      "category": "श्रेणी",
+      "language": "भाषा",
+      "description": "विवरण",
+      "quantity": "कुल मात्रा",
+      "available": "उपलब्ध"
+    },
+    "status": {
+      "available": "उपलब्ध",
+      "checkedOut": "जारी",
+      "outOfStock": "स्टॉक में नहीं"
+    },
+    "noBooks": "कोई किताब नहीं मिली"
+  },
+  "transactions": {
+    "title": "लेनदेन",
+    "issueBook": "किताब जारी करें",
+    "returnBook": "किताब वापस करें",
+    "status": {
+      "issued": "जारी",
+      "returned": "वापस",
+      "overdue": "अतिदेय",
+      "lost": "खोया"
+    }
+  },
+  "fines": {
+    "title": "जुर्माना",
+    "status": { "pending": "लंबित", "paid": "भुगतान", "waived": "माफ" }
+  },
+  "members": {
+    "title": "सदस्य",
+    "roles": { "super_admin": "सुपर एडमिन", "librarian": "पुस्तकालयाध्यक्ष", "member": "सदस्य" }
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "saveChanges": "परिवर्तन सहेजें"
+  }
+}

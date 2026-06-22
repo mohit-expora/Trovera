@@ -1,0 +1,284 @@
+{
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "search": "Search",
+      "filter": "Filter",
+      "export": "Export",
+      "loading": "Loading...",
+      "submit": "Submit",
+      "confirm": "Confirm",
+      "close": "Close",
+      "back": "Back",
+      "next": "Next",
+      "view": "View",
+      "add": "Add"
+    },
+    "pagination": {
+      "showing": "Showing {from}-{to} of {total}",
+      "rowsPerPage": "Rows per page",
+      "of": "of",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "notFound": "Not found.",
+      "forbidden": "Access denied.",
+      "networkError": "Network error. Please check your connection.",
+      "validationError": "Please check the form for errors."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "verified": "Verified",
+      "unverified": "Unverified"
+    },
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": "Language",
+    "noData": "No data available",
+    "areYouSure": "Are you sure?",
+    "thisActionCannotBeUndone": "This action cannot be undone."
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome to Trovera",
+      "subtitle": "Sign in to your library account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "signIn": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "orContinueWith": "Or continue with",
+      "signingIn": "Signing in..."
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Join Trovera Library today",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "createAccount": "Create Account",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "creatingAccount": "Creating account...",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "verifyEmail": {
+      "title": "Verify your email",
+      "subtitle": "We sent a verification link to your email",
+      "checkEmail": "Please check your email and click the verification link.",
+      "resend": "Resend email",
+      "resending": "Resending...",
+      "verifying": "Verifying..."
+    },
+    "forgotPassword": {
+      "title": "Forgot password?",
+      "subtitle": "Enter your email and we'll send a reset link",
+      "sendLink": "Send Reset Link",
+      "backToLogin": "Back to login"
+    },
+    "google": {
+      "signInWith": "Sign in with Google"
+    },
+    "logout": "Sign out"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "books": "Books",
+    "transactions": "Transactions",
+    "members": "Members",
+    "fines": "Fines",
+    "roles": "Roles & Permissions",
+    "settings": "Settings",
+    "errorLogs": "Error Logs"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}",
+    "stats": {
+      "totalBooks": "Total Books",
+      "activeMembers": "Active Members",
+      "overdueBooks": "Overdue Books",
+      "pendingFines": "Pending Fines",
+      "booksIssued": "Books Issued Today",
+      "booksReturned": "Books Returned Today"
+    },
+    "recentTransactions": "Recent Transactions",
+    "lowStockAlert": "Low Stock Alert",
+    "noRecentTransactions": "No recent transactions"
+  },
+  "books": {
+    "title": "Books",
+    "subtitle": "Manage your library collection",
+    "addBook": "Add Book",
+    "editBook": "Edit Book",
+    "deleteBook": "Delete Book",
+    "bookDetails": "Book Details",
+    "searchPlaceholder": "Search by title, author...",
+    "fields": {
+      "title": "Title",
+      "author": "Author",
+      "isbn": "ISBN",
+      "category": "Category",
+      "language": "Language",
+      "description": "Description",
+      "quantity": "Total Quantity",
+      "available": "Available",
+      "shelfLocation": "Shelf Location",
+      "publisher": "Publisher",
+      "publishedYear": "Published Year",
+      "tags": "Tags",
+      "coverImage": "Cover Image"
+    },
+    "status": {
+      "available": "Available",
+      "checkedOut": "Checked Out",
+      "outOfStock": "Out of Stock"
+    },
+    "filters": {
+      "allCategories": "All Categories",
+      "allLanguages": "All Languages",
+      "availableOnly": "Available only",
+      "sortBy": "Sort by"
+    },
+    "delete": {
+      "title": "Delete Book",
+      "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "confirm": "Delete Book"
+    },
+    "uploadImage": "Upload Cover Image",
+    "dragDropImage": "Drag & drop or click to upload",
+    "noBooks": "No books found",
+    "noBooksDescription": "Try adjusting your search or filters"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "subtitle": "Track book issues and returns",
+    "issueBook": "Issue Book",
+    "returnBook": "Return Book",
+    "markLost": "Mark as Lost",
+    "fields": {
+      "member": "Member",
+      "book": "Book",
+      "dueDate": "Due Date",
+      "issuedDate": "Issued Date",
+      "returnedDate": "Returned Date",
+      "status": "Status",
+      "issuedBy": "Issued By",
+      "notes": "Notes"
+    },
+    "status": {
+      "issued": "Issued",
+      "returned": "Returned",
+      "overdue": "Overdue",
+      "lost": "Lost"
+    },
+    "issue": {
+      "title": "Issue Book",
+      "selectMember": "Select Member",
+      "selectBook": "Select Book",
+      "dueDate": "Due Date",
+      "confirm": "Issue Book",
+      "success": "Book issued successfully"
+    },
+    "return": {
+      "title": "Return Book",
+      "confirm": "Confirm Return",
+      "fineApplied": "A fine of {amount} will be applied",
+      "noFine": "No fine applicable",
+      "success": "Book returned successfully"
+    },
+    "overdue": "Overdue Transactions",
+    "noTransactions": "No transactions found"
+  },
+  "fines": {
+    "title": "Fines",
+    "subtitle": "Manage overdue fines",
+    "pay": "Mark as Paid",
+    "waive": "Waive Fine",
+    "fields": {
+      "amount": "Amount",
+      "daysOverdue": "Days Overdue",
+      "perDayRate": "Per Day Rate",
+      "status": "Status",
+      "paidAt": "Paid At",
+      "waivedAt": "Waived At",
+      "waiveReason": "Waive Reason"
+    },
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "waived": "Waived"
+    },
+    "waive": {
+      "title": "Waive Fine",
+      "reason": "Reason for waiving",
+      "confirm": "Waive Fine"
+    },
+    "noFines": "No fines found"
+  },
+  "members": {
+    "title": "Members",
+    "subtitle": "Manage library members",
+    "addMember": "Add Member",
+    "fields": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "role": "Role",
+      "membershipId": "Membership ID",
+      "phone": "Phone",
+      "address": "Address",
+      "joinedDate": "Joined Date"
+    },
+    "roles": {
+      "super_admin": "Super Admin",
+      "librarian": "Librarian",
+      "member": "Member"
+    },
+    "noMembers": "No members found"
+  },
+  "roles": {
+    "title": "Roles & Permissions",
+    "subtitle": "Manage role-based access control",
+    "roles": {
+      "super_admin": "Super Admin",
+      "librarian": "Librarian",
+      "member": "Member"
+    },
+    "addPermission": "Add Permission",
+    "removePermission": "Remove Permission",
+    "noPermissions": "No permissions assigned"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "language": "Language",
+    "notifications": "Notifications",
+    "security": "Security",
+    "theme": {
+      "title": "Theme",
+      "description": "Choose your preferred color scheme"
+    },
+    "languageSelect": {
+      "title": "Interface Language",
+      "description": "Select the language for the interface"
+    },
+    "saveChanges": "Save Changes",
+    "saved": "Settings saved"
+  }
+}
