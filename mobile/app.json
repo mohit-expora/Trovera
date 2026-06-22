@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Trovera",
+    "slug": "trovera",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "trovera",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.expora.trovera"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#9b72cf",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "package": "in.expora.trovera"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

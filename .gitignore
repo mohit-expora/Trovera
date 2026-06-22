@@ -53,8 +53,8 @@ backend/uploads/*
 # Prisma generated (regenerated with prisma generate)
 backend/dist/
 
-# Mobile (has embedded .git — commit separately after removing mobile/.git)
-mobile/
+# Mobile
+mobile/.expo/
 
 # Alembic
 backend/app/db/migrations/versions/*.pyc
