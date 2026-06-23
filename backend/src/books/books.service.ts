@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { PrismaService } from '../prisma/prisma.service';
-import { CacheService, TTL } from '../cache/cache.service';
 import { NotFoundError, ConflictError } from '../common/exceptions/app.exception';
 import { CreateBookDto, UpdateBookDto, CreateCategoryDto } from './dto/book.dto';
 
@@ -16,7 +15,6 @@ function slugify(text: string): string {
 export class BooksService {
   constructor(
     private prisma: PrismaService,
-    private cache: CacheService,
     private config: ConfigService,
   ) {}
 
@@ -57,16 +55,11 @@ export class BooksService {
   }
 
   async getBook(id: string) {
-    const cached = await this.cache.get(`book:${id}`);
-    if (cached) return cached;
-
     const book = await this.prisma.book.findFirst({
       where: { id, is_active: true, deleted_at: null },
       include: { category: true },
     });
     if (!book) throw new NotFoundError('Book not found');
-
-    await this.cache.set(`book:${id}`, book, TTL.BOOK_DETAIL);
     return book;
   }
 
@@ -75,13 +68,10 @@ export class BooksService {
       const existing = await this.prisma.book.findUnique({ where: { isbn: dto.isbn } });
       if (existing) throw new ConflictError('A book with this ISBN already exists');
     }
-
-    const book = await this.prisma.book.create({
+    return this.prisma.book.create({
       data: { ...dto, available_quantity: dto.total_quantity || 1, created_by: createdBy },
       include: { category: true },
     });
-    await this.cache.deletePattern('books:*');
-    return book;
   }
 
   async updateBook(id: string, dto: UpdateBookDto) {
@@ -93,26 +83,19 @@ export class BooksService {
       data.available_quantity = Math.max(0, book.available_quantity + (dto.total_quantity - book.total_quantity));
     }
 
-    const updated = await this.prisma.book.update({ where: { id }, data, include: { category: true } });
-    await this.cache.delete(`book:${id}`);
-    await this.cache.deletePattern('books:*');
-    return updated;
+    return this.prisma.book.update({ where: { id }, data, include: { category: true } });
   }
 
   async deleteBook(id: string): Promise<void> {
     const book = await this.prisma.book.findFirst({ where: { id, deleted_at: null } });
     if (!book) throw new NotFoundError('Book not found');
     await this.prisma.book.update({ where: { id }, data: { deleted_at: new Date() } });
-    await this.cache.delete(`book:${id}`);
-    await this.cache.deletePattern('books:*');
   }
 
   async updateBookImage(id: string, imageUrl: string) {
     const book = await this.prisma.book.findUnique({ where: { id } });
     if (!book) throw new NotFoundError('Book not found');
-    const updated = await this.prisma.book.update({ where: { id }, data: { cover_image_url: imageUrl }, include: { category: true } });
-    await this.cache.delete(`book:${id}`);
-    return updated;
+    return this.prisma.book.update({ where: { id }, data: { cover_image_url: imageUrl }, include: { category: true } });
   }
 
   async saveBookImage(file: Express.Multer.File, bookId: string): Promise<string> {
@@ -124,19 +107,13 @@ export class BooksService {
   }
 
   async listCategories() {
-    const cached = await this.cache.get('categories:all');
-    if (cached) return cached;
-    const cats = await this.prisma.bookCategory.findMany({ orderBy: { name: 'asc' } });
-    await this.cache.set('categories:all', cats, TTL.CATEGORIES);
-    return cats;
+    return this.prisma.bookCategory.findMany({ orderBy: { name: 'asc' } });
   }
 
   async createCategory(dto: CreateCategoryDto) {
     const slug = slugify(dto.name);
     const existing = await this.prisma.bookCategory.findUnique({ where: { slug } });
     if (existing) throw new ConflictError('A category with this name already exists');
-    const cat = await this.prisma.bookCategory.create({ data: { name: dto.name, slug, description: dto.description } });
-    await this.cache.delete('categories:all');
-    return cat;
+    return this.prisma.bookCategory.create({ data: { name: dto.name, slug, description: dto.description } });
   }
 }

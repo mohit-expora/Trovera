@@ -1,13 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthProvider, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as https from 'https';
-import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
-import { CacheService, TTL } from '../cache/cache.service';
 import { ROLE_PERMISSIONS } from '../roles/permissions.config';
 import {
   AuthenticationError,
@@ -15,9 +12,17 @@ import {
   EmailNotVerifiedError,
   InactiveUserError,
   InvalidTokenError,
-  NotFoundError,
 } from '../common/exceptions/app.exception';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+
+export interface SessionUser {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  permissions: string[];
+  avatar_url?: string | null;
+}
 
 @Injectable()
 export class AuthService {
@@ -25,9 +30,7 @@ export class AuthService {
 
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService,
     private config: ConfigService,
-    private cache: CacheService,
   ) {}
 
   private hashPassword(password: string): string {
@@ -38,60 +41,19 @@ export class AuthService {
     return bcrypt.compareSync(plain, hashed);
   }
 
-  private hashToken(raw: string): string {
-    return crypto.createHash('sha256').update(raw).digest('hex');
-  }
-
   private generateSecureToken(length = 32): string {
     return crypto.randomBytes(length).toString('base64url');
   }
 
-  private generateRefreshToken(): { raw: string; hash: string } {
-    const raw = crypto.randomBytes(64).toString('base64url');
-    return { raw, hash: this.hashToken(raw) };
-  }
-
-  private parseExpiresInToSeconds(expiresIn: string): number {
-    const match = expiresIn.match(/^(\d+)([smhd])$/);
-    if (!match) return 900;
-    const val = parseInt(match[1]);
-    const unit = match[2];
-    return unit === 's' ? val : unit === 'm' ? val * 60 : unit === 'h' ? val * 3600 : val * 86400;
-  }
-
-  private buildTokenResponse(user: { id: string; email: string; full_name: string; avatar_url: string | null; auth_provider: AuthProvider; role: UserRole; is_active: boolean; is_email_verified: boolean; phone: string | null; address: string | null; membership_id: string | null; created_at: Date }) {
-    const permissions = Array.from(ROLE_PERMISSIONS[user.role] || []);
-    const accessExpiresIn = this.config.get<string>('jwt.accessExpiresIn', '15m');
-    const jti = uuidv4();
-
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, role: user.role, permissions, jti, type: 'access' },
-      { expiresIn: accessExpiresIn },
-    );
-
+  private buildSessionUser(user: any): SessionUser {
     return {
-      tokenResponse: {
-        access_token: accessToken,
-        token_type: 'bearer',
-        expires_in: this.parseExpiresInToSeconds(accessExpiresIn),
-        user: { ...user, permissions },
-      },
-      jti,
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      role: user.role,
+      permissions: Array.from(ROLE_PERMISSIONS[user.role] || []),
+      avatar_url: user.avatar_url,
     };
-  }
-
-  private async createSession(userId: string, ip?: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    const { tokenResponse } = this.buildTokenResponse(user);
-    const { raw: rawRefresh, hash: tokenHash } = this.generateRefreshToken();
-    const refreshExpireDays = this.config.get<number>('jwt.refreshExpiresDays', 7);
-    const expiresAt = new Date(Date.now() + refreshExpireDays * 86400 * 1000);
-
-    await this.prisma.refreshToken.create({
-      data: { user_id: userId, token_hash: tokenHash, ip_address: ip, expires_at: expiresAt },
-    });
-
-    return { tokenResponse, rawRefresh };
   }
 
   async register(dto: RegisterDto): Promise<{ message: string }> {
@@ -123,17 +85,29 @@ export class AuthService {
     return { message: 'Registration successful. Please check your email to verify your account.' };
   }
 
-  async login(dto: LoginDto, ip?: string) {
+  async login(dto: LoginDto): Promise<SessionUser> {
+    const allowedDomains = ['expora.in', 'trovera.in'];
+    const emailDomain = dto.email.split('@')[1];
+    if (!allowedDomains.includes(emailDomain)) {
+      throw new AuthenticationError('Only @expora.in and @trovera.in email addresses are allowed');
+    }
+
     const user = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase() } });
     if (!user || !user.password_hash) throw new AuthenticationError('Invalid email or password');
     if (!this.verifyPassword(dto.password, user.password_hash)) throw new AuthenticationError('Invalid email or password');
     if (!user.is_active) throw new InactiveUserError();
     if (!user.is_email_verified) throw new EmailNotVerifiedError();
-    return this.createSession(user.id, ip);
+    return this.buildSessionUser(user);
   }
 
-  async googleAuth(idToken: string, ip?: string) {
+  async googleAuth(idToken: string): Promise<SessionUser> {
     const googleData = await this.verifyGoogleIdToken(idToken);
+
+    const allowedDomains = ['expora.in', 'trovera.in'];
+    const emailDomain = googleData.email.split('@')[1];
+    if (!allowedDomains.includes(emailDomain)) {
+      throw new AuthenticationError('Only @expora.in and @trovera.in email addresses are allowed');
+    }
 
     let user = await this.prisma.user.findUnique({ where: { google_id: googleData.google_id } });
     if (!user) user = await this.prisma.user.findUnique({ where: { email: googleData.email.toLowerCase() } });
@@ -163,33 +137,10 @@ export class AuthService {
       });
     }
 
-    return this.createSession(user.id, ip);
+    return this.buildSessionUser(user);
   }
 
-  async refreshTokens(rawToken: string) {
-    const tokenHash = this.hashToken(rawToken);
-    const rt = await this.prisma.refreshToken.findUnique({ where: { token_hash: tokenHash } });
-
-    if (!rt || rt.revoked_at || rt.expires_at < new Date()) {
-      throw new InvalidTokenError('Refresh token is invalid or has expired');
-    }
-
-    const user = await this.prisma.user.findFirst({ where: { id: rt.user_id, is_active: true } });
-    if (!user) throw new AuthenticationError('User not found or inactive');
-
-    await this.prisma.refreshToken.update({ where: { id: rt.id }, data: { revoked_at: new Date() } });
-    return this.createSession(user.id);
-  }
-
-  async logout(jti: string, rawRefreshToken?: string): Promise<void> {
-    await this.cache.set(`jti:blacklist:${jti}`, '1', TTL.JTI_BLACKLIST);
-    if (rawRefreshToken) {
-      const tokenHash = this.hashToken(rawRefreshToken);
-      await this.prisma.refreshToken.updateMany({ where: { token_hash: tokenHash }, data: { revoked_at: new Date() } });
-    }
-  }
-
-  async verifyEmail(token: string) {
+  async verifyEmail(token: string): Promise<SessionUser> {
     const vt = await this.prisma.emailVerificationToken.findUnique({ where: { token } });
     if (!vt || vt.used_at || vt.expires_at < new Date()) {
       throw new InvalidTokenError('Verification link is invalid or has expired');
@@ -200,7 +151,8 @@ export class AuthService {
       this.prisma.user.update({ where: { id: vt.user_id }, data: { is_email_verified: true } }),
     ]);
 
-    return this.createSession(vt.user_id);
+    const user = await this.prisma.user.findUnique({ where: { id: vt.user_id } });
+    return this.buildSessionUser(user);
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {
@@ -228,7 +180,6 @@ export class AuthService {
     await this.prisma.$transaction([
       this.prisma.user.update({ where: { id: vt.user_id }, data: { password_hash: this.hashPassword(newPassword) } }),
       this.prisma.emailVerificationToken.update({ where: { id: vt.id }, data: { used_at: new Date() } }),
-      this.prisma.refreshToken.updateMany({ where: { user_id: vt.user_id, revoked_at: null }, data: { revoked_at: new Date() } }),
     ]);
 
     return { message: 'Password has been reset successfully. Please log in.' };

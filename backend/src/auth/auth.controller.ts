@@ -1,24 +1,14 @@
 import {
-  Controller, Post, Get, Body, Req, Res, UseGuards, HttpCode, HttpStatus,
+  Controller, Post, Get, Body, Req, HttpCode, HttpStatus, UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
+import { AdminUser } from '../common/decorators/admin-user.decorator';
 import { ROLE_PERMISSIONS } from '../roles/permissions.config';
 import { RegisterDto, LoginDto, GoogleCallbackDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
-import { InvalidTokenError } from '../common/exceptions/app.exception';
-
-const COOKIE_KEY = 'refresh_token';
-const COOKIE_OPTS = {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'strict' as const,
-  path: '/api/v1/auth',
-  maxAge: 7 * 24 * 3600 * 1000,
-};
 
 @ApiTags('auth')
 @Controller('auth')
@@ -36,46 +26,36 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() dto: LoginDto) {
-    const { tokenResponse, rawRefresh } = await this.authService.login(dto, req.ip);
-    res.cookie(COOKIE_KEY, rawRefresh, COOKIE_OPTS);
-    return { success: true, data: tokenResponse };
+  async login(@Req() req: Request, @Body() dto: LoginDto) {
+    const user = await this.authService.login(dto);
+    req.session['user'] = user;
+    return { success: true, data: user };
   }
 
   @Post('google/callback')
   @HttpCode(HttpStatus.OK)
-  async googleCallback(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body() dto: GoogleCallbackDto) {
-    const { tokenResponse, rawRefresh } = await this.authService.googleAuth(dto.id_token, req.ip);
-    res.cookie(COOKIE_KEY, rawRefresh, COOKIE_OPTS);
-    return { success: true, data: tokenResponse };
-  }
-
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const rawToken = req.cookies?.[COOKIE_KEY];
-    if (!rawToken) throw new InvalidTokenError('Refresh token not found');
-    const { tokenResponse, rawRefresh } = await this.authService.refreshTokens(rawToken);
-    res.cookie(COOKIE_KEY, rawRefresh, COOKIE_OPTS);
-    return { success: true, data: tokenResponse };
+  async googleCallback(@Req() req: Request, @Body() dto: GoogleCallbackDto) {
+    const user = await this.authService.googleAuth(dto.id_token);
+    req.session['user'] = user;
+    return { success: true, data: user };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response, @CurrentUser() user: any) {
-    await this.authService.logout(user.jti, req.cookies?.[COOKIE_KEY]);
-    res.clearCookie(COOKIE_KEY, { path: '/api/v1/auth' });
+  @UseGuards(AdminAuthGuard)
+  async logout(@Req() req: Request) {
+    await new Promise<void>((resolve, reject) =>
+      req.session.destroy((err) => (err ? reject(err) : resolve())),
+    );
     return { success: true, message: 'Logged out successfully' };
   }
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Res({ passthrough: true }) res: Response, @Body() dto: VerifyEmailDto) {
-    const { tokenResponse, rawRefresh } = await this.authService.verifyEmail(dto.token);
-    res.cookie(COOKIE_KEY, rawRefresh, COOKIE_OPTS);
-    return { success: true, data: tokenResponse };
+  async verifyEmail(@Req() req: Request, @Body() dto: VerifyEmailDto) {
+    const user = await this.authService.verifyEmail(dto.token);
+    req.session['user'] = user;
+    return { success: true, data: user };
   }
 
   @Post('forgot-password')
@@ -91,10 +71,9 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  async me(@CurrentUser() jwtPayload: any) {
-    const user = await this.prisma.user.findUnique({ where: { id: jwtPayload.sub } });
+  @UseGuards(AdminAuthGuard)
+  async me(@AdminUser() sessionUser: any) {
+    const user = await this.prisma.user.findUnique({ where: { id: sessionUser.id } });
     if (!user) throw new Error('User not found');
     return {
       success: true,

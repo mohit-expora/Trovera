@@ -16,23 +16,26 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/permissions.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Cacheable, CacheEvict } from '../common/decorators/cacheable.decorator';
+import { AdminUser } from '../common/decorators/admin-user.decorator';
+import { TTL } from '../cache/cache.service';
 import { BooksService } from './books.service';
 import { CreateBookDto, UpdateBookDto, CreateCategoryDto } from './dto/book.dto';
 import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
 
 @ApiTags('books')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(AdminAuthGuard, PermissionsGuard)
 @Controller('books')
 export class BooksController {
   constructor(private booksService: BooksService) {}
 
   @Get()
   @RequirePermissions('books:read')
+  @Cacheable((req) => `books:list:${req.url}`, TTL.BOOKS_LIST)
   async listBooks(
     @Query() pagination: PaginationDto,
     @Query('search') search?: string,
@@ -59,6 +62,7 @@ export class BooksController {
 
   @Get('categories')
   @RequirePermissions('categories:read')
+  @Cacheable(() => 'categories:all', TTL.CATEGORIES)
   async listCategories() {
     const cats = await this.booksService.listCategories();
     return { success: true, data: cats };
@@ -67,6 +71,7 @@ export class BooksController {
   @Post('categories')
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('categories:create')
+  @CacheEvict('categories:all')
   async createCategory(@Body() dto: CreateCategoryDto) {
     const cat = await this.booksService.createCategory(dto);
     return { success: true, data: cat };
@@ -75,13 +80,15 @@ export class BooksController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('books:create')
-  async createBook(@Body() dto: CreateBookDto, @CurrentUser() user: any) {
+  @CacheEvict('books:list:*')
+  async createBook(@Body() dto: CreateBookDto, @AdminUser() user: any) {
     const book = await this.booksService.createBook(dto, user.sub);
     return { success: true, data: book };
   }
 
   @Get(':id')
   @RequirePermissions('books:read')
+  @Cacheable((req) => `book:${req.params.id}`, TTL.BOOK_DETAIL)
   async getBook(@Param('id') id: string) {
     const book = await this.booksService.getBook(id);
     return { success: true, data: book };
@@ -89,6 +96,7 @@ export class BooksController {
 
   @Patch(':id')
   @RequirePermissions('books:update')
+  @CacheEvict((req) => `book:${req.params.id}`, 'books:list:*')
   async updateBook(@Param('id') id: string, @Body() dto: UpdateBookDto) {
     const book = await this.booksService.updateBook(id, dto);
     return { success: true, data: book };
@@ -97,6 +105,7 @@ export class BooksController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('books:delete')
+  @CacheEvict((req) => `book:${req.params.id}`, 'books:list:*')
   async deleteBook(@Param('id') id: string) {
     await this.booksService.deleteBook(id);
   }

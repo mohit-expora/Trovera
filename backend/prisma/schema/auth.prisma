@@ -1,0 +1,41 @@
+model User {
+  id                Int          @id @default(autoincrement())
+  email             String       @unique @db.VarChar(255)
+  full_name         String       @db.VarChar(255)
+  password_hash     String?      @db.VarChar(255)
+  avatar_url        String?
+  auth_provider     AuthProvider @default(local)
+  google_id         String?      @unique @db.VarChar(255)
+  role              UserRole     @default(member)
+  is_active         Boolean      @default(true)
+  is_email_verified Boolean      @default(false)
+  phone             String?      @db.VarChar(20)
+  address           String?
+  membership_id     String?      @unique @db.VarChar(50)
+  deleted_at        DateTime?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+
+  verification_tokens EmailVerificationToken[]
+  transactions        Transaction[]            @relation("MemberTransactions")
+  fines               Fine[]                   @relation("MemberFines")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model EmailVerificationToken {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  token      String    @unique @db.VarChar(500)
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([user_id])
+  @@map("email_verification_tokens")
+}

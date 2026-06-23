@@ -1,0 +1,10 @@
+enum AuthProvider {
+  local
+  google
+}
+
+enum UserRole {
+  super_admin
+  librarian
+  member
+}

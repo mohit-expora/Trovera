@@ -6,7 +6,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
+    const dbUrl = new URL(process.env.DATABASE_URL || 'postgresql://localhost:5432/trovera');
+    dbUrl.searchParams.set('connection_limit', process.env.DB_POOL_SIZE || '5');
+
     super({
+      datasources: { db: { url: dbUrl.toString() } },
       log: process.env.NODE_ENV === 'development'
         ? [{ emit: 'event', level: 'error' }, { emit: 'event', level: 'warn' }]
         : [{ emit: 'event', level: 'error' }],

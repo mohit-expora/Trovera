@@ -3,10 +3,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions, RequireRoles } from '../common/decorators/permissions.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AdminUser } from '../common/decorators/admin-user.decorator';
 import { UsersService } from './users.service';
 import { UpdateUserDto, UpdateUserRoleDto, UpdateUserActivateDto } from './dto/user.dto';
 import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
@@ -15,7 +15,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(AdminAuthGuard, PermissionsGuard)
 @Controller('users')
 export class UsersController {
   constructor(
@@ -43,7 +43,7 @@ export class UsersController {
 
   @Get(':id')
   @RequirePermissions('users:read')
-  async getUser(@Param('id') id: string, @CurrentUser() currentUser: any) {
+  async getUser(@Param('id') id: string, @AdminUser() currentUser: any) {
     if (currentUser.role === UserRole.member && currentUser.sub !== id) {
       throw new AuthorizationError('You can only access your own profile');
     }
@@ -52,7 +52,7 @@ export class UsersController {
 
   @Patch(':id')
   @RequirePermissions('users:update')
-  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() currentUser: any) {
+  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @AdminUser() currentUser: any) {
     if (currentUser.role === UserRole.member && currentUser.sub !== id) {
       throw new AuthorizationError('You can only update your own profile');
     }
@@ -80,7 +80,7 @@ export class UsersController {
 
   @Get(':id/transactions')
   @RequirePermissions('transactions:read')
-  async getUserTransactions(@Param('id') id: string, @Query() pagination: PaginationDto, @CurrentUser() currentUser: any) {
+  async getUserTransactions(@Param('id') id: string, @Query() pagination: PaginationDto, @AdminUser() currentUser: any) {
     if (currentUser.role === UserRole.member && currentUser.sub !== id) {
       throw new AuthorizationError('You can only view your own transactions');
     }
@@ -101,7 +101,7 @@ export class UsersController {
 
   @Get(':id/fines')
   @RequirePermissions('fines:read')
-  async getUserFines(@Param('id') id: string, @Query() pagination: PaginationDto, @CurrentUser() currentUser: any) {
+  async getUserFines(@Param('id') id: string, @Query() pagination: PaginationDto, @AdminUser() currentUser: any) {
     if (currentUser.role === UserRole.member && currentUser.sub !== id) {
       throw new AuthorizationError('You can only view your own fines');
     }

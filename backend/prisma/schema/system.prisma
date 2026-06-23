@@ -1,0 +1,15 @@
+model ErrorLog {
+  id          Int           @id @default(autoincrement())
+  error_code  String?       @db.VarChar(100)
+  severity    ErrorSeverity @default(medium)
+  message     String
+  stack_trace String?
+  context     Json?
+  user_id     Int?
+  ip_address  String?       @db.VarChar(45)
+  request_id  String?       @db.VarChar(100)
+  resolved    Boolean       @default(false)
+  created_at  DateTime      @default(now())
+
+  @@map("error_logs")
+}

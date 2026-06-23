@@ -14,10 +14,10 @@ import {
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
 import { Request } from 'express';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { AdminAuthGuard } from '../common/guards/admin-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermissions } from '../common/decorators/permissions.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AdminUser } from '../common/decorators/admin-user.decorator';
 import { ErrorsService } from './errors.service';
 import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
 
@@ -38,7 +38,7 @@ export class ErrorsController {
   constructor(private errorsService: ErrorsService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(AdminAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermissions('errors:read')
   async listErrors(@Query() pagination: PaginationDto) {
@@ -50,7 +50,7 @@ export class ErrorsController {
   }
 
   @Patch(':id/resolve')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @UseGuards(AdminAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermissions('errors:resolve')
   async resolveError(@Param('id') id: string) {
@@ -63,7 +63,7 @@ export class ErrorsController {
   async logClientError(
     @Body() dto: ClientErrorDto,
     @Req() req: Request,
-    @CurrentUser() currentUser?: any,
+    @AdminUser() currentUser?: any,
   ) {
     const err = await this.errorsService.logClientError({
       message: dto.message,

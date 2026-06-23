@@ -1,6 +1,6 @@
 # Trovera — Library Management System
 
-> Full-stack library management for admin. FastAPI + PostgreSQL backend, Next.js 14 App Router frontend.
+> Full-stack library management for admin. NestJS + PostgreSQL backend, Next.js 14 App Router frontend, React Native mobile app.
 
 ---
 
@@ -8,11 +8,12 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | FastAPI + SQLAlchemy 2.0 (async) + Alembic |
+| Backend | NestJS + Prisma ORM + TypeScript |
 | Database | PostgreSQL 16 |
 | Cache | Redis 7 |
 | Auth | JWT access token (15 min) + Refresh token (HttpOnly cookie, 7 days) + Google OAuth |
 | Frontend | Next.js 14 App Router + shadcn/ui + TailwindCSS |
+| Mobile | React Native + Expo |
 | Data fetching | SWR (client-side) + React Server Components (SSR) |
 | Global state | Zustand (3 stores: auth, ui, book-optimistic) |
 | i18n | next-intl + LibreTranslate/DeepL for seed translation (en, hi, es, fr) |
@@ -24,8 +25,9 @@
 
 ```
 /Trovera/
-├── backend/                    # FastAPI application
+├── backend/                    # NestJS application
 ├── frontend/                   # Next.js 14 application
+├── mobile/                     # React Native (Expo) application
 ├── docker/
 │   ├── dev/docker-compose.yml  # Full dev stack
 │   ├── Dockerfile.backend
@@ -37,74 +39,74 @@
 
 ---
 
-## Backend Architecture (`/backend/app/`)
+## Backend Architecture (`/backend/src/`)
 
 ```
-├── main.py                     # App factory: CORS, rate limiter, security headers, error handlers
-├── config.py                   # pydantic-settings — all env vars typed and validated
-├── dependencies.py             # get_db, get_redis, get_current_user FastAPI deps
+├── main.ts                     # NestJS bootstrap: CORS, rate limiter, security headers, global filters
+├── app.module.ts               # Root module with all feature modules
+├── config/
+│   └── configuration.ts        # Environment configuration typed and validated
 │
-├── core/
-│   ├── security.py             # JWT encode/decode, bcrypt (cost=12), jti blacklist in Redis
-│   ├── oauth.py                # Google OAuth via authlib — verifies id_token with JWKS
-│   ├── permissions.py          # RBAC/ABAC engine: permission_required() dep + policy_check()
-│   ├── rate_limiter.py         # Redis sliding-window: 60 req/min global, 5/min on auth endpoints
-│   ├── cache.py                # RedisCache class + cache_response() decorator + TTL constants
-│   ├── retry.py                # Tenacity decorators for external service calls
-│   ├── exceptions.py           # AppException hierarchy with severity levels
-│   ├── error_handlers.py       # Global handler → error_logs table + standard response envelope
-│   ├── middleware.py           # Security headers, CORS, request ID injection
-│   └── email.py                # SMTP sender with Tenacity retry (3 attempts, exponential backoff)
+├── common/
+│   ├── guards/                 # JwtAuthGuard, PermissionsGuard, RateLimitGuard
+│   ├── decorators/             # @RequirePermissions(), @CurrentUser(), @Public()
+│   ├── interceptors/           # CacheInterceptor, ResponseTransformInterceptor
+│   ├── filters/                # GlobalExceptionFilter → error_logs table
+│   ├── middleware/             # Security headers, CORS, request ID injection
+│   └── exceptions/             # Custom exception hierarchy with severity levels
 │
-├── db/
-│   ├── base.py                 # SQLAlchemy declarative Base
-│   ├── session.py              # Async engine + get_db dependency
-│   └── migrations/versions/    # Alembic migration files
+├── prisma/
+│   ├── schema.prisma           # Prisma schema — models, relations, indexes
+│   ├── prisma.module.ts        # PrismaModule with PrismaService
+│   └── prisma.service.ts       # Prisma client wrapper with connection management
 │
-├── models/                     # SQLAlchemy ORM (one file per domain)
-│   ├── user.py                 # User, EmailVerificationToken, RefreshToken
-│   ├── role.py                 # Permission, RolePermission, PermissionPolicy
-│   ├── book.py                 # Book, BookCategory
-│   ├── transaction.py          # Transaction, Fine
-│   ├── audit_log.py            # AuditLog (business events)
-│   └── error_log.py            # ErrorLog (runtime errors)
+├── auth/                       # Authentication module
+│   ├── auth.module.ts
+│   ├── auth.service.ts         # JWT, bcrypt, Google OAuth, token management
+│   ├── auth.controller.ts
+│   ├── strategies/             # JwtStrategy, GoogleStrategy
+│   └── dto/                    # LoginDto, RegisterDto, etc. with class-validator
 │
-├── schemas/                    # Pydantic v2 — request/response shapes
-├── repositories/               # Async SQLAlchemy data access (no business logic)
-├── services/                   # Business logic (calls repositories + cache + external APIs)
+├── books/                      # Books module
+│   ├── books.module.ts
+│   ├── books.service.ts        # Business logic + Prisma queries
+│   ├── books.controller.ts
+│   └── dto/                    # CreateBookDto, UpdateBookDto with class-validator
 │
-└── api/v1/
-    ├── auth.py                 # /auth/* — register, login, logout, refresh, google, verify-email
-    ├── books.py                # /books/* — CRUD, image upload, categories
-    ├── transactions.py         # /transactions/* — issue, return, lost, overdue
-    ├── fines.py                # /fines/* — list, pay, waive
-    ├── users.py                # /users/* — list, profile, role change, activate
-    ├── roles.py                # /roles/* — permission management (SuperAdmin only)
-    ├── errors.py               # /errors/* — error log dashboard (SuperAdmin only)
-    ├── translate.py            # /translate — proxy to translation API with Redis cache
-    └── health.py               # /health, /health/readiness
+├── transactions/               # Transactions module
+├── users/                      # Users module
+├── roles/                      # Roles & permissions module
+├── errors/                     # Error logging module
+├── translate/                  # Translation proxy module
+├── cache/                      # Redis cache module
+│   ├── cache.module.ts
+│   └── cache.service.ts        # Redis client + cache decorator logic
+│
+└── health/                     # Health check module
+    ├── health.module.ts
+    └── health.controller.ts    # /health, /health/readiness endpoints
 ```
 
 ---
 
 ## Database Schema
 
-### Tables
+### Prisma Models
 
-| Table | Key Columns | Notes |
+| Model | Key Fields | Notes |
 |-------|------------|-------|
-| `users` | id, email, full_name, password_hash, auth_provider, google_id, role, is_active, is_email_verified, membership_id, deleted_at | Soft delete; password_hash NULL for Google-only |
-| `email_verification_tokens` | user_id, token, expires_at, used_at | UUID token, 24h TTL |
-| `refresh_tokens` | user_id, token_hash, expires_at, revoked_at | SHA-256 of raw token |
-| `permissions` | code, resource, action, description | e.g. code="books:create:cta" |
-| `role_permissions` | (role, permission_id) composite PK | Maps enum role → permission |
-| `permission_policies` | permission_id, role, condition_json (JSONB) | ABAC attribute conditions |
-| `book_categories` | name, slug | |
-| `books` | title, isbn, author, cover_image_url, total_quantity, available_quantity, tags (TEXT[]), deleted_at | GIN full-text index on title+author+description |
-| `transactions` | book_id, member_id, issued_by, returned_to, status, due_date, returned_at | status: issued/returned/overdue/lost |
-| `fines` | transaction_id, member_id, amount (NUMERIC 10,2), per_day_rate, days_overdue, status | status: pending/paid/waived |
-| `audit_logs` | user_id, action, resource, resource_id, old_value (JSONB), new_value (JSONB), ip_address | Business events |
-| `error_logs` | severity, message, stack_trace, context (JSONB), request_id, resolved | Runtime errors |
+| `User` | id, email, fullName, passwordHash, authProvider, googleId, role, isActive, isEmailVerified, membershipId, deletedAt | Soft delete; passwordHash nullable for Google-only |
+| `EmailVerificationToken` | userId, token, expiresAt, usedAt | UUID token, 24h TTL |
+| `RefreshToken` | userId, tokenHash, expiresAt, revokedAt | SHA-256 of raw token |
+| `Permission` | code, resource, action, description | e.g. code="books:create:cta" |
+| `RolePermission` | role, permissionId (composite PK) | Maps enum role → permission |
+| `PermissionPolicy` | permissionId, role, conditionJson (Json) | ABAC attribute conditions |
+| `BookCategory` | name, slug | |
+| `Book` | title, isbn, author, coverImageUrl, totalQuantity, availableQuantity, tags (String[]), deletedAt | Full-text search indexes |
+| `Transaction` | bookId, memberId, issuedBy, returnedTo, status, dueDate, returnedAt | status: issued/returned/overdue/lost |
+| `Fine` | transactionId, memberId, amount (Decimal), perDayRate, daysOverdue, status | status: pending/paid/waived |
+| `AuditLog` | userId, action, resource, resourceId, oldValue (Json), newValue (Json), ipAddress | Business events |
+| `ErrorLog` | severity, message, stackTrace, context (Json), requestId, resolved | Runtime errors |
 
 ---
 
@@ -276,9 +278,9 @@ All layouts use fluid scaling — no layout jumps, works seamlessly from 320px t
 - Axios: 3 retries, exponential backoff (1s → 2s → 4s), retries on network errors and 503
 - SWR: `errorRetryCount: 3`, exponential retry, skips retry on 403/404
 
-**Backend (Tenacity):**
+**Backend (axios-retry / custom retry logic):**
 - Applied to: Google JWKS token verification, SMTP email, translation API, S3 uploads
-- Config: 3 attempts, exponential backoff 1-10s, retries on `httpx.HTTPError`
+- Config: 3 attempts, exponential backoff 1-10s, retries on network/timeout errors
 - NOT applied to DB writes (idempotency handled via unique constraints)
 
 ---
@@ -327,9 +329,9 @@ Separate from business `audit_logs` — captures runtime errors:
 | Control | Implementation |
 |---------|----------------|
 | Rate limiting | Redis sliding window: 60 req/min global, 5/min on auth |
-| CORS | Explicit `allow_origins`, no wildcard in prod |
+| CORS | Explicit `origin` whitelist, no wildcard in prod |
 | Security headers | `X-Content-Type-Options`, `X-Frame-Options: DENY`, HSTS, CSP, Referrer-Policy |
-| Input validation | Pydantic v2 strict; ORM parameterized queries only |
+| Input validation | class-validator decorators; Prisma parameterized queries only |
 | JWT | 15 min expiry; `jti` blacklist on logout; RS256 optional |
 | Refresh tokens | SHA-256 hash stored; rotation on every use |
 | CSRF | `SameSite=Strict` cookie + state param on Google OAuth |
@@ -347,7 +349,7 @@ Separate from business `audit_logs` — captures runtime errors:
 ```
 Register → bcrypt hash → create user (unverified) → send email (Mailhog in dev)
 → click link → verify token → mark verified → return JWT + refresh cookie
-Login → verify password + is_active + is_verified → JWT (15 min) + refresh (7 days HttpOnly cookie)
+Login → verify password + isActive + isEmailVerified → JWT (15 min) + refresh (7 days HttpOnly cookie)
 Refresh → validate hash + not revoked → rotate both tokens → retry original request
 ```
 
@@ -388,12 +390,12 @@ Click button → /api/auth/google → redirect to Google (with CSRF state param)
 
 | Phase | Days | Work |
 |-------|------|------|
-| 1 — Infrastructure | 1-2 | Docker Compose, DB models, Alembic migrations, app factory |
-| 2 — Auth Backend | 2-4 | JWT, bcrypt, Google OAuth, email, rate limiting, auth API |
-| 3 — Core Domain Backend | 4-6 | Books, transactions, fines APIs + Redis cache + pagination |
-| 4 — RBAC/ABAC | 6-7 | Permission engine, seed permissions, wire to all endpoints |
-| 5 — Error Auditing | 7 | error_logs table, global handler, /errors API |
-| 6 — Retry Layer | 7-8 | Tenacity on all external calls (email, OAuth, translate) |
+| 1 — Infrastructure | 1-2 | Docker Compose, Prisma schema, migrations, NestJS app setup |
+| 2 — Auth Backend | 2-4 | JWT, bcrypt, Google OAuth, email, rate limiting, auth module |
+| 3 — Core Domain Backend | 4-6 | Books, transactions, fines modules + Redis cache + pagination |
+| 4 — RBAC/ABAC | 6-7 | Permission guards, seed permissions, wire to all controllers |
+| 5 — Error Auditing | 7 | ErrorLog model, global exception filter, errors module |
+| 6 — Retry Layer | 7-8 | axios-retry on all external calls (email, OAuth, translate) |
 | 7 — Frontend Foundation | 8-9 | Next.js init, shadcn/ui, Tailwind pastel config, Zustand stores, SWR config |
 | 8 — Auth UI | 9-10 | Login, Signup, Google button, verify-email, server actions |
 | 9 — App Shell | 10-12 | AppShell, Sidebar, Header, MobileNav, PermissionGate, Dashboard |
@@ -402,7 +404,8 @@ Click button → /api/auth/google → redirect to Google (with CSRF state param)
 | 12 — Members + Roles | 16-17 | Members list/detail, roles page (SuperAdmin) |
 | 13 — Translation Seed | 17-18 | Run seed script, review hi/es/fr, test language switching |
 | 14 — Polish + Responsive | 18-19 | Mobile layouts, dark mode pass, empty states, skeletons |
-| 15 — Testing + Audit | 19-20 | pytest-asyncio, Vitest, pip-audit, npm audit, retry testing |
+| 15 — Testing + Audit | 19-20 | Jest (backend), Vitest (frontend), npm audit, retry testing |
+| 16 — Mobile App | 20-22 | React Native app with Expo, core features, authentication |
 
 ---
 
@@ -411,23 +414,33 @@ Click button → /api/auth/google → redirect to Google (with CSRF state param)
 ```bash
 # 1. Copy env file
 cp docker/dev/.env.example docker/dev/.env
-# Fill in GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+# Fill in GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL
 
 # 2. Start infrastructure
 docker compose -f docker/dev/docker-compose.yml up -d
 
-# 3. Run migrations
-cd backend && alembic upgrade head
+# 3. Install dependencies and run migrations
+cd backend
+npm install
+npx prisma generate
+npx prisma migrate dev
 
 # 4. Start backend (hot-reload)
-uvicorn app.main:app --reload --port 8000
+npm run start:dev
 
 # 5. Start frontend (hot-reload)
-cd frontend && npm install && npm run dev
+cd ../frontend
+npm install
+npm run dev
+
+# 6. Start mobile app (optional)
+cd ../mobile
+npm install
+npx expo start
 
 # Services:
-# Backend API:    http://localhost:8000/docs
-# Frontend:       http://localhost:3000
+# Backend API:    http://localhost:8001
+# Frontend:       http://localhost:3002
 # Mailhog UI:     http://localhost:8025
 # pgAdmin:        http://localhost:5050
 # Redis:          localhost:6379

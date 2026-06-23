@@ -1,4 +1,5 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -14,18 +15,18 @@ import { RolesModule } from './roles/roles.module';
 import { HealthModule } from './health/health.module';
 import { ErrorsModule } from './errors/errors.module';
 import { TranslateModule } from './translate/translate.module';
-import { SecurityHeadersMiddleware } from './common/middleware/security-headers.middleware';
+import { HttpCacheInterceptor } from './common/interceptors/cache.interceptor';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => [
-        { ttl: 60000, limit: config.get<number>('rateLimit.perMinute', 60) },
-      ],
-    }),
+    // ThrottlerModule.forRootAsync({             //For now commenting out rate limiting to avoid issues
+    //   imports: [ConfigModule],
+    //   inject: [ConfigService],
+    //   useFactory: (config: ConfigService) => [
+    //     { ttl: 60000, limit: config.get<number>('rateLimit.perMinute', 60) },
+    //   ],
+    // }),
     ServeStaticModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -46,9 +47,6 @@ import { SecurityHeadersMiddleware } from './common/middleware/security-headers.
     ErrorsModule,
     TranslateModule,
   ],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: HttpCacheInterceptor }],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityHeadersMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

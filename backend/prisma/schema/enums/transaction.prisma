@@ -1,0 +1,12 @@
+enum TransactionStatus {
+  issued
+  returned
+  overdue
+  lost
+}
+
+enum FineStatus {
+  pending
+  paid
+  waived
+}

@@ -4,6 +4,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import * as session from 'express-session';
+import { RedisStore } from 'connect-redis';
+import Redis from 'ioredis';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -18,8 +22,32 @@ async function bootstrap() {
   const port = config.get<number>('port', 8001);
   const env = config.get<string>('nodeEnv', 'development');
 
-  // Cookie parser (must be before CORS)
+  // Security headers
+  app.use(helmet());
+
+  // Cookie parser (must be before session)
   app.use(cookieParser());
+
+  // Session middleware with Redis store
+  const redisUrl = config.get<string>('redis.url', 'redis://localhost:6379/0');
+  const sessionSecret = config.get<string>('session.secret');
+  const sessionMaxAgeDays = config.get<number>('session.maxAgeDays', 7);
+  const redisClient = new Redis(redisUrl);
+  app.use(
+    session({
+      store: new RedisStore({ client: redisClient }),
+      secret: sessionSecret,
+      resave: false,
+      saveUninitialized: false,
+      name: 'trovera_sid',
+      cookie: {
+        httpOnly: true,
+        secure: env === 'production',
+        sameSite: 'strict',
+        maxAge: sessionMaxAgeDays * 24 * 60 * 60 * 1000,
+      },
+    }),
+  );
 
   // CORS
   const corsOrigins = config.get<string>('corsOrigins', 'http://localhost:3000');

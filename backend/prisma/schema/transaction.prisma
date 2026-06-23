@@ -1,0 +1,47 @@
+model Transaction {
+  id          Int               @id @default(autoincrement())
+  book_id     Int
+  member_id   Int
+  issued_by   Int?
+  returned_to Int?
+  status      TransactionStatus @default(issued)
+  issued_at   DateTime
+  due_date    DateTime
+  returned_at DateTime?
+  notes       String?
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
+
+  book   Book @relation(fields: [book_id], references: [id], onDelete: Restrict)
+  member User @relation("MemberTransactions", fields: [member_id], references: [id], onDelete: Restrict)
+  fines  Fine[]
+
+  @@index([book_id])
+  @@index([member_id])
+  @@index([status])
+  @@map("transactions")
+}
+
+model Fine {
+  id             Int        @id @default(autoincrement())
+  transaction_id Int
+  member_id      Int
+  amount         Decimal    @db.Decimal(10, 2)
+  per_day_rate   Decimal    @db.Decimal(6, 2)
+  days_overdue   Int
+  status         FineStatus @default(pending)
+  paid_at        DateTime?
+  waived_by      Int?
+  waived_at      DateTime?
+  waive_reason   String?
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  transaction Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  member      User        @relation("MemberFines", fields: [member_id], references: [id], onDelete: Restrict)
+
+  @@index([member_id])
+  @@index([status])
+  @@index([transaction_id])
+  @@map("fines")
+}
