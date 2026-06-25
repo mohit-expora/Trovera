@@ -16,82 +16,85 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 async function bootstrap() {
+  // cors: false — we configure CORS manually below for fine-grained origin control
   const app = await NestFactory.create(AppModule, { cors: false });
 
   const config = app.get(ConfigService);
   const port = config.get<number>('port', 8001);
   const env = config.get<string>('nodeEnv', 'development');
 
-  // Security headers
+  // Sets security headers: X-Frame-Options, HSTS, X-Content-Type-Options, CSP, etc.
+  // Replaces the old custom SecurityHeadersMiddleware
   app.use(helmet());
 
-  // Cookie parser (must be before session)
+  // cookie-parser must run before express-session so session can read the sid cookie
   app.use(cookieParser());
 
-  // Session middleware with Redis store
+  // Session stored in Redis — survives backend restarts, shared across multiple instances
   const redisUrl = config.get<string>('redis.url', 'redis://localhost:6379/0');
   const sessionSecret = config.get<string>('session.secret');
   const sessionMaxAgeDays = config.get<number>('session.maxAgeDays', 7);
   const redisClient = new Redis(redisUrl);
+
   app.use(
     session({
       store: new RedisStore({ client: redisClient }),
       secret: sessionSecret,
+      // resave: false — don't re-save session to Redis on every request if nothing changed
       resave: false,
+      // saveUninitialized: false — don't create a Redis entry until user actually logs in
       saveUninitialized: false,
       name: 'trovera_sid',
       cookie: {
-        httpOnly: true,
-        secure: env === 'production',
-        sameSite: 'strict',
+        httpOnly: true,   // JS cannot read this cookie — XSS protection
+        secure: env === 'production', // HTTPS only in prod; HTTP allowed in dev
+        sameSite: 'strict',           // Cookie not sent on cross-site requests — CSRF protection
         maxAge: sessionMaxAgeDays * 24 * 60 * 60 * 1000,
       },
     }),
   );
 
-  // CORS
+  // CORS — only allow requests from explicitly listed origins
   const corsOrigins = config.get<string>('corsOrigins', 'http://localhost:3000');
   const originList = corsOrigins.split(',').map((o) => o.trim()).filter(Boolean);
   app.enableCors({
     origin: (origin, callback) => {
-      // allow requests with no origin (curl, mobile apps, server-to-server)
+      // Allow requests with no origin — curl, mobile apps, server-to-server calls
       if (!origin || originList.includes(origin)) return callback(null, true);
       callback(new Error(`CORS blocked: ${origin}`));
     },
-    credentials: true,
+    credentials: true, // Required for cookies to be sent cross-origin
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Authorization', 'Content-Type', 'X-Request-ID'],
     exposedHeaders: ['X-Request-ID'],
   });
 
-  // Global pipes
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      transform: true,
+      whitelist: true,           // Strip properties not in the DTO
+      transform: true,           // Auto-convert types (string → number, etc.)
       forbidNonWhitelisted: false,
     }),
   );
 
-  // Global filters
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Global interceptors
+  // RequestIdInterceptor runs first — attaches X-Request-ID to every response for tracing
   app.useGlobalInterceptors(new RequestIdInterceptor(), new TransformInterceptor());
 
-  // API prefix (health routes are excluded so they live at /health, /health/readiness)
+  // Health endpoints are excluded so they're reachable at /health without the /api/v1 prefix
   app.setGlobalPrefix('api/v1', {
     exclude: ['health', 'health/readiness'],
   });
 
-  // Serve uploads as static files
+  // Ensure upload directory exists at startup
   const uploadDir = config.get<string>('uploadDir', './uploads');
   const resolvedUploadDir = path.resolve(uploadDir);
   if (!fs.existsSync(resolvedUploadDir)) {
     fs.mkdirSync(resolvedUploadDir, { recursive: true });
   }
 
-  // Swagger (dev only)
+  // Swagger only in development — not exposed in production
   if (env === 'development') {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Trovera Library Management')

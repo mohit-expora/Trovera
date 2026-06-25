@@ -28,6 +28,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Req() req: Request, @Body() dto: LoginDto) {
     const user = await this.authService.login(dto);
+    // Store user in session — express-session persists this to Redis automatically
     req.session['user'] = user;
     return { success: true, data: user };
   }
@@ -35,6 +36,8 @@ export class AuthController {
   @Post('google/callback')
   @HttpCode(HttpStatus.OK)
   async googleCallback(@Req() req: Request, @Body() dto: GoogleCallbackDto) {
+    // Frontend sends the Google ID token obtained from Google Sign-In SDK
+    // Backend verifies it with Google's tokeninfo API (no redirect flow needed)
     const user = await this.authService.googleAuth(dto.id_token);
     req.session['user'] = user;
     return { success: true, data: user };
@@ -44,6 +47,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AdminAuthGuard)
   async logout(@Req() req: Request) {
+    // Destroys the session in Redis and clears the cookie on the client
     await new Promise<void>((resolve, reject) =>
       req.session.destroy((err) => (err ? reject(err) : resolve())),
     );
@@ -53,6 +57,7 @@ export class AuthController {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Req() req: Request, @Body() dto: VerifyEmailDto) {
+    // Auto-login after email verification — no need for a separate login step
     const user = await this.authService.verifyEmail(dto.token);
     req.session['user'] = user;
     return { success: true, data: user };
@@ -73,6 +78,8 @@ export class AuthController {
   @Get('me')
   @UseGuards(AdminAuthGuard)
   async me(@AdminUser() sessionUser: any) {
+    // Re-fetch from DB to get the latest user state (role changes, deactivation, etc.)
+    // Session data could be stale if the user was modified after login
     const user = await this.prisma.user.findUnique({ where: { id: sessionUser.id } });
     if (!user) throw new Error('User not found');
     return {

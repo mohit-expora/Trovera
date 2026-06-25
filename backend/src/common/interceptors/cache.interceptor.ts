@@ -8,6 +8,18 @@ import { CACHE_KEY_FN_META, CACHE_TTL_META, CACHE_EVICT_META } from '../decorato
 
 type EvictTarget = string | ((req: Request) => string | string[]);
 
+// Global interceptor that powers @Cacheable and @CacheEvict decorators.
+// Registered as APP_INTERCEPTOR in AppModule so it runs on every request.
+//
+// Flow for @Cacheable endpoints (GET):
+//   1. Compute cache key from keyFn(request)
+//   2. If key exists in Redis → return cached value immediately (handler never called)
+//   3. Otherwise → run handler → store response in Redis with TTL
+//
+// Flow for @CacheEvict endpoints (POST/PATCH/DELETE):
+//   1. Run handler normally
+//   2. After success → delete all matching Redis key patterns
+//   3. Pattern wildcards (e.g. 'books:list:*') are resolved via Redis SCAN + DEL
 @Injectable()
 export class HttpCacheInterceptor implements NestInterceptor {
   constructor(
@@ -28,8 +40,11 @@ export class HttpCacheInterceptor implements NestInterceptor {
     if (keyFn) {
       const key = keyFn(request);
       const cached = await this.cache.get(key);
+
+      // Cache hit — short-circuit, handler is never executed
       if (cached !== null) return of(cached);
 
+      // Cache miss — run handler and store result
       return next.handle().pipe(
         tap(async (response) => {
           await this.cache.set(key, response, ttl);
@@ -38,6 +53,8 @@ export class HttpCacheInterceptor implements NestInterceptor {
     }
 
     if (evictTargets?.length) {
+      // Run the mutation first, then evict on success
+      // tap only runs if the handler completes without throwing
       return next.handle().pipe(
         tap(async () => {
           const patterns = evictTargets.flatMap((t) =>
@@ -48,6 +65,7 @@ export class HttpCacheInterceptor implements NestInterceptor {
       );
     }
 
+    // No cache metadata — pass through unchanged
     return next.handle();
   }
 }

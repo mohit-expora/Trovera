@@ -34,6 +34,7 @@ export class AuthService {
   ) {}
 
   private hashPassword(password: string): string {
+    // Cost factor 12 — good balance of security vs latency (~300ms on modern hardware)
     return bcrypt.hashSync(password, 12);
   }
 
@@ -45,6 +46,8 @@ export class AuthService {
     return crypto.randomBytes(length).toString('base64url');
   }
 
+  // Builds the minimal user object stored in Redis session.
+  // Permissions are embedded here so PermissionsGuard needs no DB lookup per request.
   private buildSessionUser(user: any): SessionUser {
     return {
       id: user.id,
@@ -86,6 +89,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<SessionUser> {
+    // Domain check happens before any DB query — fail fast without leaking user existence
     const allowedDomains = ['expora.in', 'trovera.in'];
     const emailDomain = dto.email.split('@')[1];
     if (!allowedDomains.includes(emailDomain)) {
@@ -93,6 +97,7 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase() } });
+    // Return the same error for "user not found" and "wrong password" — prevents user enumeration
     if (!user || !user.password_hash) throw new AuthenticationError('Invalid email or password');
     if (!this.verifyPassword(dto.password, user.password_hash)) throw new AuthenticationError('Invalid email or password');
     if (!user.is_active) throw new InactiveUserError();
