@@ -47,7 +47,11 @@ async function bootstrap() {
       name: 'trovera_sid',
       cookie: {
         httpOnly: true,
+        // secure:true works for HTTPS (prod/EC2) and http://localhost (Chrome exception)
         secure: env === 'production',
+        // Dev: SameSite=None so localhost frontend can reach the EC2 backend cross-origin
+        // Prod: SameSite=Strict so only same-domain requests carry the session cookie
+        sameSite: env === 'production' ? 'strict' : 'none',
         maxAge: sessionMaxAgeDays * 24 * 60 * 60 * 1000,
       },
     }),
