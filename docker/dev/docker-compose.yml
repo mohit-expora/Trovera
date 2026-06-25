@@ -17,7 +17,6 @@ services:
     volumes:
       - ../../backend/src:/app/src
       - backend_uploads:/app/uploads
-      - backend_node_modules:/app/node_modules
     ports:
       - "8011:8011"
     depends_on:
@@ -109,4 +108,3 @@ volumes:
   redis_data:
   # pgadmin_data:
   backend_uploads:
-  backend_node_modules:
