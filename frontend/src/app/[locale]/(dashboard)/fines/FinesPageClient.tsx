@@ -41,7 +41,7 @@ function WaiveDialog({
   onClose,
   onSuccess,
 }: {
-  fineId: string;
+  fineId: number;
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -120,7 +120,7 @@ export function FinesPageClient({ initialData }: FinesPageClientProps) {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<FineStatus | "all">("all");
   const [memberSearch, setMemberSearch] = useState("");
-  const [waiveFineId, setWaiveFineId] = useState<string | null>(null);
+  const [waiveFineId, setWaiveFineId] = useState<number | null>(null);
 
   const { fines, meta, isLoading, mutate } = useFines(
     {
@@ -141,7 +141,7 @@ export function FinesPageClient({ initialData }: FinesPageClientProps) {
       )
     : fines;
 
-  async function handlePayFine(id: string) {
+  async function handlePayFine(id: number) {
     try {
       await payFine(id);
       toast.success("Fine marked as paid.");
