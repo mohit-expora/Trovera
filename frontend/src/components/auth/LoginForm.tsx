@@ -44,11 +44,11 @@ export function LoginForm() {
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const response = await api.post<ApiSuccess<{ access_token: string; user: UserProfile }>>(
+      const response = await api.post<ApiSuccess<{ user: UserProfile }>>(
         "/auth/login",
         { email: values.email, password: values.password }
       );
-      setUser(response.data.user, response.data.access_token);
+      setUser(response.data.user);
       router.push(`/${locale}/dashboard`);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };

@@ -4,14 +4,19 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001/api/v1";
 
-export async function getServerUser() {
+function buildCookieHeader(): string {
   const cookieStore = cookies();
-  const token = cookieStore.get("access_token")?.value;
-  if (!token) return null;
+  return cookieStore.getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+}
+
+export async function getServerUser() {
+  const cookieHeader = buildCookieHeader();
 
   try {
     const res = await fetch(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Cookie: cookieHeader },
       next: { revalidate: 0 },
     });
     if (!res.ok) return null;
@@ -26,15 +31,14 @@ export async function serverFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<T | null> {
-  const cookieStore = cookies();
-  const token = cookieStore.get("access_token")?.value;
+  const cookieHeader = buildCookieHeader();
 
   try {
     const res = await fetch(`${API_URL}${path}`, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        Cookie: cookieHeader,
         ...(options?.headers ?? {}),
       },
       next: { revalidate: 60, ...((options as any)?.next ?? {}) },

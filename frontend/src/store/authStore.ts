@@ -1,13 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { UserProfile } from "@/types/user";
-import { setAccessToken } from "@/lib/api";
 
 interface AuthState {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  setUser: (user: UserProfile, token: string) => void;
+  setUser: (user: UserProfile) => void;
   updateUser: (partial: Partial<UserProfile>) => void;
   logout: () => void;
   setLoading: (v: boolean) => void;
@@ -20,8 +19,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
 
-      setUser: (user, token) => {
-        setAccessToken(token);
+      setUser: (user) => {
         set({ user, isAuthenticated: true, isLoading: false });
       },
 
@@ -31,7 +29,6 @@ export const useAuthStore = create<AuthState>()(
         })),
 
       logout: () => {
-        setAccessToken(null);
         set({ user: null, isAuthenticated: false, isLoading: false });
       },
 
