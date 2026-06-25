@@ -13,7 +13,7 @@ interface TransactionTableProps {
   showMember?: boolean;
   showBook?: boolean;
   onReturn?: (transaction: Transaction) => void;
-  onMarkLost?: (id: string) => void;
+  onMarkLost?: (id: number) => void;
 }
 
 function StatusBadge({ status }: { status: TransactionStatus }) {

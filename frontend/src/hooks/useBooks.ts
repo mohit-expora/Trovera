@@ -60,7 +60,7 @@ export function useBooks(
 }
 
 // ── useBook ───────────────────────────────────────────────────────────────────
-export function useBook(id: string, fallbackData?: Book) {
+export function useBook(id: number, fallbackData?: Book) {
   const { optimisticBooks } = useBookStore();
 
   const { data, isLoading, error, mutate } = useSWR<ApiSuccess<Book>>(
@@ -108,13 +108,13 @@ export function useBookMutations(mutateList?: KeyedMutator<PaginatedResponse<Boo
     return res.data;
   }
 
-  async function updateBook(id: string, bookData: Partial<Book>): Promise<Book> {
+  async function updateBook(id: number, bookData: Partial<Book>): Promise<Book> {
     const res = await api.patch<ApiSuccess<Book>>(`/books/${id}`, bookData);
     await mutateList?.();
     return res.data;
   }
 
-  async function deleteBook(id: string): Promise<void> {
+  async function deleteBook(id: number): Promise<void> {
     optimisticDelete(id);
     try {
       await api.delete(`/books/${id}`);
@@ -127,7 +127,7 @@ export function useBookMutations(mutateList?: KeyedMutator<PaginatedResponse<Boo
   }
 
   async function uploadCoverImage(
-    id: string,
+    id: number,
     file: File
   ): Promise<{ cover_image_url: string }> {
     const formData = new FormData();

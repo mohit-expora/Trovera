@@ -2,11 +2,11 @@ import { create } from "zustand";
 import type { Book } from "@/types/book";
 
 interface BookStoreState {
-  optimisticBooks: Map<string, Partial<Book>>;
-  pendingDeletes: Set<string>;
-  optimisticUpdate: (id: string, partial: Partial<Book>) => void;
-  optimisticDelete: (id: string) => void;
-  revertOptimistic: (id: string) => void;
+  optimisticBooks: Map<number, Partial<Book>>;
+  pendingDeletes: Set<number>;
+  optimisticUpdate: (id: number, partial: Partial<Book>) => void;
+  optimisticDelete: (id: number) => void;
+  revertOptimistic: (id: number) => void;
   clearOptimistic: () => void;
 }
 

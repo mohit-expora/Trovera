@@ -28,8 +28,8 @@ interface IssueBookModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: (transaction: Transaction) => void;
-  preselectedBookId?: string;
-  preselectedMemberId?: string;
+  preselectedBookId?: number;
+  preselectedMemberId?: number;
 }
 
 interface FieldError {

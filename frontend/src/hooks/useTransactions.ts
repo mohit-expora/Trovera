@@ -22,8 +22,8 @@ interface TransactionFilters {
   page?: number;
   page_size?: number;
   status?: TransactionStatus;
-  member_id?: string;
-  book_id?: string;
+  member_id?: number;
+  book_id?: number;
 }
 
 export function useTransactions(
@@ -52,7 +52,7 @@ export function useTransactions(
   };
 }
 
-export function useTransaction(id: string): {
+export function useTransaction(id: number): {
   transaction: Transaction | null;
   isLoading: boolean;
   error: unknown;
@@ -71,28 +71,28 @@ export function useTransaction(id: string): {
 }
 
 interface IssueBookData {
-  book_id: string;
-  member_id: string;
+  book_id: number;
+  member_id: number;
   due_date: string;
   notes?: string;
 }
 
 export function useTransactionMutations(): {
   issueBook: (data: IssueBookData) => Promise<Transaction>;
-  returnBook: (id: string, data?: { notes?: string }) => Promise<Transaction>;
-  markLost: (id: string) => Promise<Transaction>;
+  returnBook: (id: number, data?: { notes?: string }) => Promise<Transaction>;
+  markLost: (id: number) => Promise<Transaction>;
 } {
   const issueBook = async (data: IssueBookData): Promise<Transaction> => {
     const res = await api.post<ApiSuccess<Transaction>>("/transactions/issue", data);
     return res.data;
   };
 
-  const returnBook = async (id: string, data?: { notes?: string }): Promise<Transaction> => {
+  const returnBook = async (id: number, data?: { notes?: string }): Promise<Transaction> => {
     const res = await api.patch<ApiSuccess<Transaction>>(`/transactions/${id}/return`, data ?? {});
     return res.data;
   };
 
-  const markLost = async (id: string): Promise<Transaction> => {
+  const markLost = async (id: number): Promise<Transaction> => {
     const res = await api.patch<ApiSuccess<Transaction>>(`/transactions/${id}/lost`, {});
     return res.data;
   };
@@ -106,7 +106,7 @@ interface FineFilters {
   page?: number;
   page_size?: number;
   status?: FineStatus;
-  member_id?: string;
+  member_id?: number;
 }
 
 export function useFines(
@@ -136,15 +136,15 @@ export function useFines(
 }
 
 export function useFineMutations(): {
-  payFine: (id: string) => Promise<Fine>;
-  waiveFine: (id: string, reason: string) => Promise<Fine>;
+  payFine: (id: number) => Promise<Fine>;
+  waiveFine: (id: number, reason: string) => Promise<Fine>;
 } {
-  const payFine = async (id: string): Promise<Fine> => {
+  const payFine = async (id: number): Promise<Fine> => {
     const res = await api.patch<ApiSuccess<Fine>>(`/fines/${id}/pay`, {});
     return res.data;
   };
 
-  const waiveFine = async (id: string, reason: string): Promise<Fine> => {
+  const waiveFine = async (id: number, reason: string): Promise<Fine> => {
     const res = await api.patch<ApiSuccess<Fine>>(`/fines/${id}/waive`, { waive_reason: reason });
     return res.data;
   };

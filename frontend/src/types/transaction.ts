@@ -5,11 +5,11 @@ export type TransactionStatus = "issued" | "returned" | "overdue" | "lost";
 export type FineStatus = "pending" | "paid" | "waived";
 
 export interface Transaction {
-  id: string;
-  book_id: string;
-  member_id: string;
-  issued_by?: string | null;
-  returned_to?: string | null;
+  id: number;
+  book_id: number;
+  member_id: number;
+  issued_by?: number | null;
+  returned_to?: number | null;
   status: TransactionStatus;
   issued_at: string;
   due_date: string;
@@ -21,9 +21,9 @@ export interface Transaction {
 }
 
 export interface Fine {
-  id: string;
-  transaction_id: string;
-  member_id: string;
+  id: number;
+  transaction_id: number;
+  member_id: number;
   amount: number;
   per_day_rate: number;
   days_overdue: number;
