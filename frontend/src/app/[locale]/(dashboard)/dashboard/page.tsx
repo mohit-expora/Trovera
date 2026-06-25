@@ -18,9 +18,9 @@ export default async function DashboardPage() {
       serverFetch<PaginatedResponse<Book>>("/books?page=1&page_size=1"),
       serverFetch<PaginatedResponse<Transaction>>("/transactions?page=1&page_size=5"),
       serverFetch<PaginatedResponse<Book>>("/books?available_only=false&page=1&page_size=10"),
-      serverFetch<PaginatedResponse<{ id: string }>>("/users?role=member&page=1&page_size=1"),
+      serverFetch<PaginatedResponse<{ id: number }>>("/users?role=member&page=1&page_size=1"),
       serverFetch<PaginatedResponse<Transaction>>("/transactions?status=issued&page=1&page_size=1"),
-      serverFetch<PaginatedResponse<{ id: string }>>("/fines?status=pending&page=1&page_size=1"),
+      serverFetch<PaginatedResponse<{ id: number }>>("/fines?status=pending&page=1&page_size=1"),
     ]);
 
   const totalBooks = booksData?.meta.total ?? 0;

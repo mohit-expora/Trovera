@@ -80,7 +80,7 @@ export function BookForm({ initialData, categories, onSuccess }: BookFormProps) 
       isbn: initialData?.isbn ?? "",
       publisher: initialData?.publisher ?? "",
       published_year: initialData?.published_year ?? undefined,
-      category_id: initialData?.category_id ?? "",
+      category_id: initialData?.category_id != null ? String(initialData.category_id) : "",
       language: initialData?.language ?? "",
       description: initialData?.description ?? "",
       shelf_location: initialData?.shelf_location ?? "",
@@ -100,7 +100,7 @@ export function BookForm({ initialData, categories, onSuccess }: BookFormProps) 
         isbn: values.isbn || undefined,
         publisher: values.publisher || undefined,
         published_year: values.published_year ?? undefined,
-        category_id: values.category_id || undefined,
+        category_id: values.category_id ? parseInt(values.category_id, 10) : undefined,
         language: values.language || "en",
         description: values.description || undefined,
         shelf_location: values.shelf_location || undefined,
@@ -214,7 +214,7 @@ export function BookForm({ initialData, categories, onSuccess }: BookFormProps) 
             <SelectContent>
               <SelectItem value="none">No category</SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
+                <SelectItem key={cat.id} value={String(cat.id)}>
                   {cat.name}
                 </SelectItem>
               ))}

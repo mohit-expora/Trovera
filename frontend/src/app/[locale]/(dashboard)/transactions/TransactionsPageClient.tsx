@@ -51,7 +51,7 @@ export function TransactionsPageClient({ initialData }: TransactionsPageClientPr
       )
     : transactions;
 
-  async function handleMarkLost(id: string) {
+  async function handleMarkLost(id: number) {
     try {
       await markLost(id);
       toast.success("Transaction marked as lost.");
