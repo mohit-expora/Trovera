@@ -46,9 +46,8 @@ async function bootstrap() {
       saveUninitialized: false,
       name: 'trovera_sid',
       cookie: {
-        httpOnly: true,   // JS cannot read this cookie — XSS protection
-        secure: env === 'production', // HTTPS only in prod; HTTP allowed in dev
-        sameSite: 'strict',           // Cookie not sent on cross-site requests — CSRF protection
+        httpOnly: true,
+        secure: env === 'production',
         maxAge: sessionMaxAgeDays * 24 * 60 * 60 * 1000,
       },
     }),
