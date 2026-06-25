@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -17,7 +18,7 @@ import * as path from 'path';
 
 async function bootstrap() {
   // cors: false — we configure CORS manually below for fine-grained origin control
-  const app = await NestFactory.create(AppModule, { cors: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: false });
 
   // Trust the first proxy (nginx) so req.secure reflects X-Forwarded-Proto: https
   // Without this, secure: 'auto' sees HTTP from nginx and omits the Secure flag,
