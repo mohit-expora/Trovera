@@ -19,6 +19,11 @@ async function bootstrap() {
   // cors: false — we configure CORS manually below for fine-grained origin control
   const app = await NestFactory.create(AppModule, { cors: false });
 
+  // Trust the first proxy (nginx) so req.secure reflects X-Forwarded-Proto: https
+  // Without this, secure: 'auto' sees HTTP from nginx and omits the Secure flag,
+  // causing SameSite=None cookies to be silently dropped by the browser
+  app.set('trust proxy', 1);
+
   const config = app.get(ConfigService);
   const port = config.get<number>('port', 8001);
   const env = config.get<string>('nodeEnv', 'development');
