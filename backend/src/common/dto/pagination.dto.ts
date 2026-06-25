@@ -34,12 +34,17 @@ export function paginatedResponse<T>(
   page: number,
   pageSize: number,
 ) {
+  const totalPages = Math.ceil(total / pageSize);
   return {
     success: true,
     data: items,
-    total,
-    page,
-    page_size: pageSize,
-    total_pages: Math.ceil(total / pageSize),
+    meta: {
+      total,
+      page,
+      page_size: pageSize,
+      total_pages: totalPages,
+      has_next: page < totalPages,
+      has_prev: page > 1,
+    },
   };
 }
