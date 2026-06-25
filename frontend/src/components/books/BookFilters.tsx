@@ -22,7 +22,7 @@ const LANGUAGES = [
 
 const DEFAULT_FILTERS: BookFilter = {
   search: "",
-  category_id: "",
+  category_id: undefined,
   language: "",
   available_only: false,
 };
@@ -59,8 +59,8 @@ export function BookFilters({
 
       {/* Category */}
       <Select
-        value={filters.category_id ?? ""}
-        onValueChange={(v) => update({ category_id: v === "all" ? "" : v })}
+        value={filters.category_id != null ? String(filters.category_id) : ""}
+        onValueChange={(v) => update({ category_id: v === "all" ? undefined : parseInt(v, 10) })}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="All Categories" />
@@ -68,7 +68,7 @@ export function BookFilters({
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
           {categories.map((cat) => (
-            <SelectItem key={cat.id} value={cat.id}>
+            <SelectItem key={cat.id} value={String(cat.id)}>
               {cat.name}
             </SelectItem>
           ))}
