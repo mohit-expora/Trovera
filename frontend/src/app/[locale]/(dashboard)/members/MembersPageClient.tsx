@@ -414,7 +414,7 @@ export function MembersPageClient({ initialData }: MembersPageClientProps) {
     }
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(id: number) {
     try {
       await deleteUser(id);
       toast.success("Member deleted.");
