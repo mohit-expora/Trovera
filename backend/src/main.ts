@@ -47,12 +47,9 @@ async function bootstrap() {
       name: 'trovera_sid',
       cookie: {
         httpOnly: true,
-        // SameSite=None requires Secure=true (browser rejects the cookie otherwise).
-        // secure:true works for HTTPS (prod/EC2 behind nginx) and http://localhost
-        // (Chrome makes a special exception for localhost).
-        secure: true,
-        // Dev: SameSite=None — allows localhost frontend to send cookie cross-origin to EC2
-        // Prod: SameSite=Strict — same-domain only, no cross-origin
+        secure: 'auto',
+        // Dev: SameSite=None — allows localhost frontend cross-origin to EC2
+        // Prod: SameSite=Strict — same-domain only
         sameSite: env === 'production' ? 'strict' : 'none',
         maxAge: sessionMaxAgeDays * 24 * 60 * 60 * 1000,
       },
