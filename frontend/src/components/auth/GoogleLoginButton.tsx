@@ -39,11 +39,12 @@ export function GoogleLoginButton() {
         client_id: clientId,
         callback: async (response: { credential: string }) => {
           try {
-            const result = await api.post<ApiSuccess<{ user: UserProfile }>>(
-              "/auth/google",
+            // Backend endpoint: POST /auth/google/callback with { id_token }
+            const result = await api.post<ApiSuccess<UserProfile>>(
+              "/auth/google/callback",
               { id_token: response.credential }
             );
-            setUser(result.data.user);
+            setUser(result.data);
             router.push(`/${locale}/dashboard`);
           } catch {
             toast.error("Google sign-in failed. Please try again.");

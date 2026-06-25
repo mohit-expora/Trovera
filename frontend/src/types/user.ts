@@ -2,7 +2,7 @@ export type UserRole = "super_admin" | "librarian" | "member";
 export type AuthProvider = "local" | "google";
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   full_name: string;
   avatar_url?: string | null;
