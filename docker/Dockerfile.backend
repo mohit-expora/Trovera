@@ -26,6 +26,7 @@ FROM base AS build
 RUN npm ci
 
 COPY backend/ .
+RUN npx prisma generate --schema=./prisma/schema
 RUN npm run build
 
 # ── Production target ────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient, type RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 // TTL in seconds for each cache category. Keep these in sync with business expectations:
 // - BOOKS_LIST/BOOK_DETAIL: short because librarians update inventory frequently
@@ -21,11 +21,11 @@ export const TTL = {
 @Injectable()
 export class CacheService implements OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
-  private client: RedisClientType;
+  private client: ReturnType<typeof createClient>;
 
   constructor(private config: ConfigService) {
     const redisUrl = config.get<string>('redis.url', 'redis://localhost:6379/0');
-    this.client = createClient({ url: redisUrl }) as RedisClientType;
+    this.client = createClient({ url: redisUrl });
     this.client.on('error', (err) => this.logger.warn(`Redis error: ${err.message}`));
     this.client.on('connect', () => this.logger.log('Redis connected'));
     this.client.connect().catch((err) => this.logger.warn(`Redis connect failed: ${err.message}`));
@@ -35,7 +35,7 @@ export class CacheService implements OnModuleDestroy {
   async get<T>(key: string): Promise<T | null> {
     try {
       const val = await this.client.get(key);
-      return val ? (JSON.parse(val) as T) : null;
+      return val ? (JSON.parse(val.toString()) as T) : null;
     } catch {
       return null;
     }
@@ -62,7 +62,7 @@ export class CacheService implements OnModuleDestroy {
 
   async exists(key: string): Promise<boolean> {
     try {
-      return (await this.client.exists(key)) > 0;
+      return Number(await this.client.exists(key)) > 0;
     } catch {
       return false;
     }
