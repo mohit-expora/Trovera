@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import { createClient, type RedisClientType } from 'redis';
 
 // TTL in seconds for each cache category. Keep these in sync with business expectations:
 // - BOOKS_LIST/BOOK_DETAIL: short because librarians update inventory frequently
@@ -21,18 +21,14 @@ export const TTL = {
 @Injectable()
 export class CacheService implements OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
-  private client: Redis;
+  private client: RedisClientType;
 
   constructor(private config: ConfigService) {
     const redisUrl = config.get<string>('redis.url', 'redis://localhost:6379/0');
-    // lazyConnect: false — connect immediately so early cache reads don't fail silently
-    this.client = new Redis(redisUrl, {
-      lazyConnect: false,
-      maxRetriesPerRequest: 3,
-      enableReadyCheck: true,
-    });
+    this.client = createClient({ url: redisUrl }) as RedisClientType;
     this.client.on('error', (err) => this.logger.warn(`Redis error: ${err.message}`));
     this.client.on('connect', () => this.logger.log('Redis connected'));
+    this.client.connect().catch((err) => this.logger.warn(`Redis connect failed: ${err.message}`));
   }
 
   // Errors are swallowed so a Redis outage degrades gracefully (cache miss → DB fallback)
@@ -49,7 +45,7 @@ export class CacheService implements OnModuleDestroy {
     try {
       const serialized = JSON.stringify(value);
       if (ttlSeconds) {
-        await this.client.setex(key, ttlSeconds, serialized);
+        await this.client.setEx(key, ttlSeconds, serialized);
       } else {
         await this.client.set(key, serialized);
       }
@@ -78,7 +74,6 @@ export class CacheService implements OnModuleDestroy {
     try {
       const keys = await this.client.keys(pattern);
       if (keys.length > 0) {
-        // ioredis del accepts an array directly — spread can hit argument limit on large key sets
         await this.client.del(keys);
       }
     } catch {}

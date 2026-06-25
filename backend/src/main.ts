@@ -7,7 +7,7 @@ import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import * as session from 'express-session';
 import { RedisStore } from 'connect-redis';
-import Redis from 'ioredis';
+import { createClient } from 'redis';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -34,7 +34,8 @@ async function bootstrap() {
   const redisUrl = config.get<string>('redis.url', 'redis://localhost:6379/0');
   const sessionSecret = config.get<string>('session.secret');
   const sessionMaxAgeDays = config.get<number>('session.maxAgeDays', 7);
-  const redisClient = new Redis(redisUrl);
+  const redisClient = createClient({ url: redisUrl });
+  await redisClient.connect();
 
   app.use(
     session({
