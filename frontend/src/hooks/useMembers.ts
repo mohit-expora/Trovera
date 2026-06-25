@@ -52,7 +52,7 @@ export function useMembers(
   };
 }
 
-export function useMember(id: string): {
+export function useMember(id: number): {
   member: User | null;
   isLoading: boolean;
   error: unknown;
@@ -69,10 +69,10 @@ export function useMember(id: string): {
 }
 
 export function useMemberMutations(): {
-  updateMember: (id: string, data: Partial<UserProfile>) => Promise<UserProfile>;
-  updateRole: (id: string, role: UserRole) => Promise<UserProfile>;
-  toggleActivate: (id: string, is_active: boolean) => Promise<UserProfile>;
-  deleteUser: (id: string) => Promise<void>;
+  updateMember: (id: number, data: Partial<UserProfile>) => Promise<UserProfile>;
+  updateRole: (id: number, role: UserRole) => Promise<UserProfile>;
+  toggleActivate: (id: number, is_active: boolean) => Promise<UserProfile>;
+  deleteUser: (id: number) => Promise<void>;
   createMember: (data: {
     full_name: string;
     email: string;
@@ -82,22 +82,22 @@ export function useMemberMutations(): {
     address?: string;
   }) => Promise<UserProfile>;
 } {
-  const updateMember = async (id: string, data: Partial<UserProfile>): Promise<UserProfile> => {
+  const updateMember = async (id: number, data: Partial<UserProfile>): Promise<UserProfile> => {
     const res = await api.patch<ApiSuccess<UserProfile>>(`/users/${id}`, data);
     return res.data;
   };
 
-  const updateRole = async (id: string, role: UserRole): Promise<UserProfile> => {
+  const updateRole = async (id: number, role: UserRole): Promise<UserProfile> => {
     const res = await api.patch<ApiSuccess<UserProfile>>(`/users/${id}/role`, { role });
     return res.data;
   };
 
-  const toggleActivate = async (id: string, is_active: boolean): Promise<UserProfile> => {
+  const toggleActivate = async (id: number, is_active: boolean): Promise<UserProfile> => {
     const res = await api.patch<ApiSuccess<UserProfile>>(`/users/${id}`, { is_active });
     return res.data;
   };
 
-  const deleteUser = async (id: string): Promise<void> => {
+  const deleteUser = async (id: number): Promise<void> => {
     await api.delete(`/users/${id}`);
   };
 
