@@ -217,7 +217,7 @@ export function FinesPageClient({ initialData }: FinesPageClientProps) {
                     )}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
-                    {fine.transaction_id.slice(0, 8)}…
+                    #{fine.transaction_id}
                   </td>
                   <td className="px-4 py-3">
                     <span className="font-medium">₹{fine.amount.toFixed(2)}</span>
