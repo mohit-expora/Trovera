@@ -4,6 +4,7 @@ import {
   Patch,
   Post,
   Param,
+  ParseIntPipe,
   Body,
   Query,
   UseGuards,
@@ -20,6 +21,7 @@ import { RequirePermissions } from '../common/decorators/permissions.decorator';
 import { AdminUser } from '../common/decorators/admin-user.decorator';
 import { ErrorsService } from './errors.service';
 import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
+import { SessionUser } from '../types/session';
 
 class ClientErrorDto {
   @IsString()
@@ -53,23 +55,25 @@ export class ErrorsController {
   @UseGuards(AdminAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermissions('errors:resolve')
-  async resolveError(@Param('id') id: string) {
+  async resolveError(@Param('id', ParseIntPipe) id: number) {
     const err = await this.errorsService.resolve(id);
     return { success: true, data: err };
   }
 
+  // POST /errors/client is intentionally PUBLIC — no AdminAuthGuard — so the frontend
+  // can report JS errors even when the user has no valid session (e.g. login page crash)
   @Post('client')
   @HttpCode(HttpStatus.CREATED)
   async logClientError(
     @Body() dto: ClientErrorDto,
     @Req() req: Request,
-    @AdminUser() currentUser?: any,
+    @AdminUser() currentUser?: SessionUser,
   ) {
     const err = await this.errorsService.logClientError({
       message: dto.message,
       stack: dto.stack,
       context: dto.context,
-      userId: currentUser?.sub,
+      userId: currentUser?.id,
       ip: req.ip,
       requestId: (req as any).requestId,
     });

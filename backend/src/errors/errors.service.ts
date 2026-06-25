@@ -19,15 +19,17 @@ export class ErrorsService {
     return { errors, total };
   }
 
-  async resolve(id: string) {
+  async resolve(id: number) {
     const err = await this.prisma.errorLog.findUnique({ where: { id } });
     if (!err) throw new NotFoundError('Error log not found');
     return this.prisma.errorLog.update({ where: { id }, data: { resolved: true } });
   }
 
+  // Client-side errors (JS exceptions, unhandled promise rejections) are stored with severity:low
+  // because they are user-facing and not server-side — admins use this to triage frontend issues
   async logClientError(data: {
     message: string; stack?: string; context?: any;
-    userId?: string; ip?: string; requestId?: string;
+    userId?: number; ip?: string; requestId?: string;
   }) {
     return this.prisma.errorLog.create({
       data: {

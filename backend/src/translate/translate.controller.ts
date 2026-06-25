@@ -15,6 +15,8 @@ class TranslateDto {
   target_lang: string;
 }
 
+// Only AdminAuthGuard (no PermissionsGuard) — any logged-in user can translate.
+// Translation is a utility feature not tied to a specific role permission.
 @ApiTags('translate')
 @ApiBearerAuth()
 @UseGuards(AdminAuthGuard)

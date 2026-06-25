@@ -12,6 +12,9 @@ class UpdatePermissionDto {
   @IsBoolean() granted: boolean;
 }
 
+// Roles and their permissions are read-only from this controller — they come from the
+// static ROLE_PERMISSIONS map, not from DB. updateRolePermissions is a stub; persist
+// to DB and reload the map if dynamic per-role customisation is ever needed.
 @ApiTags('roles')
 @ApiBearerAuth()
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -35,6 +38,7 @@ export class RolesController {
     return { success: true, data: { role, permissions: Array.from(ROLE_PERMISSIONS[role] || []) } };
   }
 
+  // Stub — returns the requested change but does not persist it
   @Patch(':role/permissions')
   @RequirePermissions('roles:permission:update')
   updateRolePermissions(@Param('role') role: UserRole, @Body() dto: UpdatePermissionDto) {

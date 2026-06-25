@@ -9,6 +9,10 @@ import {
 import { Request, Response } from 'express';
 import { AppException } from '../exceptions/app.exception';
 
+// Handles three exception types and normalises them into a consistent error envelope:
+//   AppException  → uses statusCode/code/details from the exception
+//   HttpException → NestJS built-ins (e.g. NotFoundException, class-validator 400s)
+//   Error         → unexpected / unhandled — logs stack, returns 500
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
@@ -36,6 +40,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else if (typeof exceptionResponse === 'object') {
         const resp = exceptionResponse as any;
         message = resp.message || message;
+        // class-validator produces resp.message as string[] — flatten into details
         if (Array.isArray(resp.message)) {
           details = resp.message;
           message = 'Validation failed';

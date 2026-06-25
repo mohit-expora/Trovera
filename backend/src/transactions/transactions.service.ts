@@ -5,6 +5,7 @@ import { CacheService } from '../cache/cache.service';
 import { NotFoundError, ConflictError, BookUnavailableError } from '../common/exceptions/app.exception';
 import { IssueBookDto, ReturnBookDto, WaiveFineDto } from './dto/transaction.dto';
 
+// ₹1.00 per day — change this constant to update the fine rate globally
 const PER_DAY_FINE_RATE = 1.0;
 
 const TX_INCLUDE = { book: true, member: true, fines: true };
@@ -19,7 +20,7 @@ export class TransactionsService {
 
   async listTransactions(params: {
     page: number; pageSize: number;
-    memberId?: string; bookId?: string; status?: TransactionStatus;
+    memberId?: number; bookId?: number; status?: TransactionStatus;
   }) {
     const where: any = {};
     if (params.memberId) where.member_id = params.memberId;
@@ -39,7 +40,7 @@ export class TransactionsService {
     return { transactions, total };
   }
 
-  async getTransaction(id: string) {
+  async getTransaction(id: number) {
     const tx = await this.prisma.transaction.findUnique({ where: { id }, include: TX_INCLUDE });
     if (!tx) throw new NotFoundError('Transaction not found');
     return tx;
@@ -53,7 +54,7 @@ export class TransactionsService {
     });
   }
 
-  async issueBook(dto: IssueBookDto, issuedBy: string) {
+  async issueBook(dto: IssueBookDto, issuedBy: number) {
     const member = await this.prisma.user.findFirst({ where: { id: dto.member_id, is_active: true, deleted_at: null } });
     if (!member) throw new NotFoundError('Member not found or inactive');
 
@@ -61,6 +62,8 @@ export class TransactionsService {
     if (!book) throw new NotFoundError('Book not found');
     if (book.available_quantity <= 0) throw new BookUnavailableError();
 
+    // $transaction ensures the quantity decrement and transaction record are atomic —
+    // prevents over-issuing if two librarians issue the last copy simultaneously
     const [tx] = await this.prisma.$transaction([
       this.prisma.transaction.create({
         data: {
@@ -81,7 +84,7 @@ export class TransactionsService {
     return tx;
   }
 
-  async returnBook(txId: string, returnedBy: string, dto: ReturnBookDto) {
+  async returnBook(txId: number, returnedBy: number, dto: ReturnBookDto) {
     const tx = await this.prisma.transaction.findUnique({ where: { id: txId } });
     if (!tx) throw new NotFoundError('Transaction not found');
     if (tx.status !== TransactionStatus.issued) throw new ConflictError("This transaction is not in 'issued' state");
@@ -97,6 +100,7 @@ export class TransactionsService {
 
     let fine = null;
     if (now > tx.due_date) {
+      // Minimum 1 day fine even if returned a few hours late on the same overdue day
       const daysOverdue = Math.max(1, Math.floor((now.getTime() - tx.due_date.getTime()) / 86400000));
       fine = await this.prisma.fine.create({
         data: {
@@ -115,11 +119,12 @@ export class TransactionsService {
     return { transaction: updatedTx, fine };
   }
 
-  async markLost(txId: string, librarianId: string) {
+  async markLost(txId: number, librarianId: number) {
     const tx = await this.prisma.transaction.findUnique({ where: { id: txId } });
     if (!tx) throw new NotFoundError('Transaction not found');
     if (tx.status !== TransactionStatus.issued) throw new ConflictError("Transaction is not in 'issued' state");
 
+    // Flat fine of 30 days for a lost book — book quantity is NOT incremented since it's gone
     const [updatedTx] = await this.prisma.$transaction([
       this.prisma.transaction.update({
         where: { id: txId },
@@ -144,7 +149,7 @@ export class TransactionsService {
 
   // ── Fines ────────────────────────────────────────────────────────────────
 
-  async listFines(params: { page: number; pageSize: number; memberId?: string; status?: FineStatus }) {
+  async listFines(params: { page: number; pageSize: number; memberId?: number; status?: FineStatus }) {
     const where: any = {};
     if (params.memberId) where.member_id = params.memberId;
     if (params.status) where.status = params.status;
@@ -162,20 +167,20 @@ export class TransactionsService {
     return { fines, total };
   }
 
-  async getFine(id: string) {
+  async getFine(id: number) {
     const fine = await this.prisma.fine.findUnique({ where: { id }, include: FINE_INCLUDE });
     if (!fine) throw new NotFoundError('Fine not found');
     return fine;
   }
 
-  async payFine(id: string) {
+  async payFine(id: number) {
     const fine = await this.prisma.fine.findUnique({ where: { id } });
     if (!fine) throw new NotFoundError('Fine not found');
     if (fine.status !== FineStatus.pending) throw new ConflictError('Fine is not in pending state');
     return this.prisma.fine.update({ where: { id }, data: { status: FineStatus.paid, paid_at: new Date() }, include: FINE_INCLUDE });
   }
 
-  async waiveFine(id: string, waivedBy: string, dto: WaiveFineDto) {
+  async waiveFine(id: number, waivedBy: number, dto: WaiveFineDto) {
     const fine = await this.prisma.fine.findUnique({ where: { id } });
     if (!fine) throw new NotFoundError('Fine not found');
     if (fine.status !== FineStatus.pending) throw new ConflictError('Fine is not in pending state');
@@ -186,6 +191,7 @@ export class TransactionsService {
     });
   }
 
+  // Clears all transaction-related caches and the dashboard stats so counts stay accurate
   private async invalidateCache() {
     await this.cache.deletePattern('transactions:*');
     await this.cache.delete('dashboard:stats');

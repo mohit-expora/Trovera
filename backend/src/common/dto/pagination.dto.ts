@@ -1,6 +1,8 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
+// Standard page-based pagination DTO. Prisma queries use the computed offset/limit getters
+// rather than page/page_size directly to avoid repeating the arithmetic everywhere.
 export class PaginationDto {
   @IsOptional()
   @Type(() => Number)
@@ -24,6 +26,8 @@ export class PaginationDto {
   }
 }
 
+// Builds the paginated envelope expected by the frontend.
+// Pass this object directly from a controller — TransformInterceptor detects `success` and skips re-wrapping.
 export function paginatedResponse<T>(
   items: T[],
   total: number,

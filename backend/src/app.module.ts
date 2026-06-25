@@ -19,14 +19,19 @@ import { HttpCacheInterceptor } from './common/interceptors/cache.interceptor';
 
 @Module({
   imports: [
+    // isGlobal: true — ConfigService available in every module without re-importing
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    // ThrottlerModule.forRootAsync({             //For now commenting out rate limiting to avoid issues
+
+    // ThrottlerModule disabled temporarily — re-enable when rate limiting is needed
+    // ThrottlerModule.forRootAsync({
     //   imports: [ConfigModule],
     //   inject: [ConfigService],
     //   useFactory: (config: ConfigService) => [
     //     { ttl: 60000, limit: config.get<number>('rateLimit.perMinute', 60) },
     //   ],
     // }),
+
+    // Serves uploaded files (book covers) at /uploads/* as static assets
     ServeStaticModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -36,6 +41,7 @@ import { HttpCacheInterceptor } from './common/interceptors/cache.interceptor';
         serveStaticOptions: { index: false },
       }],
     }),
+
     PrismaModule,
     CacheModule,
     AuthModule,
@@ -47,6 +53,7 @@ import { HttpCacheInterceptor } from './common/interceptors/cache.interceptor';
     ErrorsModule,
     TranslateModule,
   ],
+  // APP_INTERCEPTOR runs on every request globally — powers @Cacheable and @CacheEvict decorators
   providers: [{ provide: APP_INTERCEPTOR, useClass: HttpCacheInterceptor }],
 })
 export class AppModule {}

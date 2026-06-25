@@ -2,6 +2,9 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 
+// Attaches a request ID to every request and response.
+// Forwards X-Request-ID from the client if present (useful for tracing across services);
+// otherwise generates a new UUID. The ID is also attached to error responses by AllExceptionsFilter.
 @Injectable()
 export class RequestIdInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

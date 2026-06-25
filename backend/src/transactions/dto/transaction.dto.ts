@@ -1,11 +1,14 @@
-import { IsString, IsDateString, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsDateString, IsOptional, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class IssueBookDto {
-  @IsUUID()
-  book_id: string;
+  @Type(() => Number)
+  @IsInt()
+  book_id: number;
 
-  @IsUUID()
-  member_id: string;
+  @Type(() => Number)
+  @IsInt()
+  member_id: number;
 
   @IsDateString()
   due_date: string;

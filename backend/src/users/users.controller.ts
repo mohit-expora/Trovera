@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Patch, Delete, Param, Body, Query, UseGuards, HttpCode, HttpStatus,
+  Controller, Get, Patch, Delete, Param, ParseIntPipe, Body, Query, UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
@@ -12,6 +12,7 @@ import { UpdateUserDto, UpdateUserRoleDto, UpdateUserActivateDto } from './dto/u
 import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
 import { AuthorizationError } from '../common/exceptions/app.exception';
 import { PrismaService } from '../prisma/prisma.service';
+import { SessionUser } from '../types/session';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -43,8 +44,9 @@ export class UsersController {
 
   @Get(':id')
   @RequirePermissions('users:read')
-  async getUser(@Param('id') id: string, @AdminUser() currentUser: any) {
-    if (currentUser.role === UserRole.member && currentUser.sub !== id) {
+  async getUser(@Param('id', ParseIntPipe) id: number, @AdminUser() currentUser: SessionUser) {
+    // Members can only fetch their own profile — admins/librarians can fetch any user
+    if (currentUser.role === UserRole.member && currentUser.id !== id) {
       throw new AuthorizationError('You can only access your own profile');
     }
     return { success: true, data: await this.usersService.findById(id) };
@@ -52,36 +54,37 @@ export class UsersController {
 
   @Patch(':id')
   @RequirePermissions('users:update')
-  async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @AdminUser() currentUser: any) {
-    if (currentUser.role === UserRole.member && currentUser.sub !== id) {
+  async updateUser(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto, @AdminUser() currentUser: SessionUser) {
+    if (currentUser.role === UserRole.member && currentUser.id !== id) {
       throw new AuthorizationError('You can only update your own profile');
     }
     return { success: true, data: await this.usersService.update(id, dto) };
   }
 
+  // Soft delete and role/activate changes are super_admin only
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequireRoles(UserRole.super_admin)
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.softDelete(id);
   }
 
   @Patch(':id/role')
   @RequireRoles(UserRole.super_admin)
-  async updateRole(@Param('id') id: string, @Body() dto: UpdateUserRoleDto) {
+  async updateRole(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserRoleDto) {
     return { success: true, data: await this.usersService.updateRole(id, dto) };
   }
 
   @Patch(':id/activate')
   @RequireRoles(UserRole.super_admin)
-  async activateUser(@Param('id') id: string, @Body() dto: UpdateUserActivateDto) {
+  async activateUser(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserActivateDto) {
     return { success: true, data: await this.usersService.updateActivate(id, dto) };
   }
 
   @Get(':id/transactions')
   @RequirePermissions('transactions:read')
-  async getUserTransactions(@Param('id') id: string, @Query() pagination: PaginationDto, @AdminUser() currentUser: any) {
-    if (currentUser.role === UserRole.member && currentUser.sub !== id) {
+  async getUserTransactions(@Param('id', ParseIntPipe) id: number, @Query() pagination: PaginationDto, @AdminUser() currentUser: SessionUser) {
+    if (currentUser.role === UserRole.member && currentUser.id !== id) {
       throw new AuthorizationError('You can only view your own transactions');
     }
     const page = pagination.page || 1;
@@ -101,8 +104,8 @@ export class UsersController {
 
   @Get(':id/fines')
   @RequirePermissions('fines:read')
-  async getUserFines(@Param('id') id: string, @Query() pagination: PaginationDto, @AdminUser() currentUser: any) {
-    if (currentUser.role === UserRole.member && currentUser.sub !== id) {
+  async getUserFines(@Param('id', ParseIntPipe) id: number, @Query() pagination: PaginationDto, @AdminUser() currentUser: SessionUser) {
+    if (currentUser.role === UserRole.member && currentUser.id !== id) {
       throw new AuthorizationError('You can only view your own fines');
     }
     const page = pagination.page || 1;

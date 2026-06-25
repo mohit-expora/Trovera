@@ -14,17 +14,21 @@ export class TranslateService {
   async translate(text: string, sourceLang: string, targetLang: string): Promise<string> {
     if (sourceLang === targetLang) return text;
 
+    // Cache key uses a base64 prefix of the text to handle special chars in keys.
+    // Sliced to 64 chars to keep key length reasonable — collision risk is negligible for library text.
     const cacheKey = `translate:${sourceLang}:${targetLang}:${Buffer.from(text).toString('base64').slice(0, 64)}`;
     const cached = await this.cache.get<string>(cacheKey);
     if (cached) return cached;
 
     let result: string | null = null;
 
+    // DeepLX is tried first — it's self-hosted and free with no rate limits
     const deeplxUrl = this.config.get<string>('translation.deeplxUrl');
     if (deeplxUrl) {
       result = await this.translateViaDeeplx(deeplxUrl, text, sourceLang, targetLang);
     }
 
+    // LibreTranslate is the fallback if DeepLX is not configured or returns null
     const libreUrl = this.config.get<string>('translation.libreTranslateUrl');
     if (!result && libreUrl) {
       result = await this.translateViaLibre(libreUrl, text, sourceLang, targetLang);

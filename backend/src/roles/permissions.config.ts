@@ -1,5 +1,12 @@
 import { UserRole } from '@prisma/client';
 
+// Static permission map — no DB storage. Permissions are embedded in the session at login
+// and re-read from this map when a role changes (see UsersService.updateRole).
+//
+// Permission naming conventions:
+//   page:<name>:view       — controls whether a sidebar nav item is visible in the UI
+//   <resource>:<action>    — guards an API endpoint (checked by PermissionsGuard)
+//   <resource>:<action>:cta / :field / :section  — UI-only hints (hide/show buttons & fields)
 export const ROLE_PERMISSIONS: Record<UserRole, Set<string>> = {
   [UserRole.super_admin]: new Set([
     'page:books:view', 'page:transactions:view', 'page:members:view',

@@ -42,30 +42,32 @@ export class UsersService {
     return { users, total };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const user = await this.prisma.user.findFirst({ where: { id, deleted_at: null } });
     if (!user) throw new NotFoundError('User not found');
     return user;
   }
 
-  async update(id: string, dto: UpdateUserDto) {
+  async update(id: number, dto: UpdateUserDto) {
     await this.findById(id);
     return this.prisma.user.update({ where: { id }, data: dto });
   }
 
-  async updateRole(id: string, dto: UpdateUserRoleDto) {
+  async updateRole(id: number, dto: UpdateUserRoleDto) {
     await this.findById(id);
     const user = await this.prisma.user.update({ where: { id }, data: { role: dto.role } });
+    // Invalidate the cached permissions for this user so the next request re-reads from ROLE_PERMISSIONS
     await this.cache.delete(`permissions:${id}`);
     return user;
   }
 
-  async updateActivate(id: string, dto: UpdateUserActivateDto) {
+  async updateActivate(id: number, dto: UpdateUserActivateDto) {
     await this.findById(id);
     return this.prisma.user.update({ where: { id }, data: { is_active: dto.is_active } });
   }
 
-  async softDelete(id: string): Promise<void> {
+  // Soft delete — sets deleted_at so the record is retained for transaction history
+  async softDelete(id: number): Promise<void> {
     await this.findById(id);
     await this.prisma.user.update({ where: { id }, data: { deleted_at: new Date() } });
   }

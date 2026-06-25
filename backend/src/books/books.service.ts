@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotFoundError, ConflictError } from '../common/exceptions/app.exception';
 import { CreateBookDto, UpdateBookDto, CreateCategoryDto } from './dto/book.dto';
 
+// Converts a category name to a URL-safe slug used as a unique identifier
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
 }
@@ -36,10 +37,12 @@ export class BooksService {
     if (params.author) where.author = { contains: params.author, mode: 'insensitive' };
     if (params.availableOnly) where.available_quantity = { gt: 0 };
 
+    // Whitelist sortBy to prevent arbitrary field injection
     const validSortFields = ['created_at', 'title', 'author', 'available_quantity'];
     const sortField = validSortFields.includes(params.sortBy) ? params.sortBy : 'created_at';
     const sortDir = params.sortOrder === 'asc' ? 'asc' : 'desc';
 
+    // $transaction([findMany, count]) fetches both in a single round-trip
     const [books, total] = await this.prisma.$transaction([
       this.prisma.book.findMany({
         where,
@@ -54,7 +57,7 @@ export class BooksService {
     return { books, total };
   }
 
-  async getBook(id: string) {
+  async getBook(id: number) {
     const book = await this.prisma.book.findFirst({
       where: { id, is_active: true, deleted_at: null },
       include: { category: true },
@@ -63,7 +66,7 @@ export class BooksService {
     return book;
   }
 
-  async createBook(dto: CreateBookDto, createdBy: string) {
+  async createBook(dto: CreateBookDto, createdBy: number) {
     if (dto.isbn) {
       const existing = await this.prisma.book.findUnique({ where: { isbn: dto.isbn } });
       if (existing) throw new ConflictError('A book with this ISBN already exists');
@@ -74,34 +77,37 @@ export class BooksService {
     });
   }
 
-  async updateBook(id: string, dto: UpdateBookDto) {
+  async updateBook(id: number, dto: UpdateBookDto) {
     const book = await this.prisma.book.findFirst({ where: { id, deleted_at: null } });
     if (!book) throw new NotFoundError('Book not found');
 
     const data: any = { ...dto };
     if (dto.total_quantity !== undefined) {
+      // Adjust available_quantity by the delta so copies on loan are not lost from the count
       data.available_quantity = Math.max(0, book.available_quantity + (dto.total_quantity - book.total_quantity));
     }
 
     return this.prisma.book.update({ where: { id }, data, include: { category: true } });
   }
 
-  async deleteBook(id: string): Promise<void> {
+  // Soft delete — keeps the book record for historical transaction references
+  async deleteBook(id: number): Promise<void> {
     const book = await this.prisma.book.findFirst({ where: { id, deleted_at: null } });
     if (!book) throw new NotFoundError('Book not found');
     await this.prisma.book.update({ where: { id }, data: { deleted_at: new Date() } });
   }
 
-  async updateBookImage(id: string, imageUrl: string) {
+  async updateBookImage(id: number, imageUrl: string) {
     const book = await this.prisma.book.findUnique({ where: { id } });
     if (!book) throw new NotFoundError('Book not found');
     return this.prisma.book.update({ where: { id }, data: { cover_image_url: imageUrl }, include: { category: true } });
   }
 
-  async saveBookImage(file: Express.Multer.File, bookId: string): Promise<string> {
+  async saveBookImage(file: Express.Multer.File, bookId: number): Promise<string> {
     const uploadDir = path.resolve(this.config.get<string>('uploadDir', './uploads'), 'books');
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
     const filename = `${bookId}-${Date.now()}.webp`;
+    // Normalise to 400×600 cover aspect ratio and compress to WebP for consistent sizes
     await (sharp as any)(file.buffer).resize(400, 600, { fit: 'cover' }).webp({ quality: 85 }).toFile(path.join(uploadDir, filename));
     return `/uploads/books/${filename}`;
   }

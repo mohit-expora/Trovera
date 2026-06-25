@@ -5,6 +5,7 @@ import {
   Patch,
   Delete,
   Param,
+  ParseIntPipe,
   Body,
   Query,
   UseGuards,
@@ -25,7 +26,9 @@ import { TTL } from '../cache/cache.service';
 import { BooksService } from './books.service';
 import { CreateBookDto, UpdateBookDto, CreateCategoryDto } from './dto/book.dto';
 import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
+import { SessionUser } from '../types/session';
 
+// Guard order matters: AdminAuthGuard populates req.user first, then PermissionsGuard reads it
 @ApiTags('books')
 @ApiBearerAuth()
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -33,6 +36,7 @@ import { PaginationDto, paginatedResponse } from '../common/dto/pagination.dto';
 export class BooksController {
   constructor(private booksService: BooksService) {}
 
+  // Cache key includes the full URL so different filter combinations cache independently
   @Get()
   @RequirePermissions('books:read')
   @Cacheable((req) => `books:list:${req.url}`, TTL.BOOKS_LIST)
@@ -81,15 +85,15 @@ export class BooksController {
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('books:create')
   @CacheEvict('books:list:*')
-  async createBook(@Body() dto: CreateBookDto, @AdminUser() user: any) {
-    const book = await this.booksService.createBook(dto, user.sub);
+  async createBook(@Body() dto: CreateBookDto, @AdminUser() user: SessionUser) {
+    const book = await this.booksService.createBook(dto, user.id);
     return { success: true, data: book };
   }
 
   @Get(':id')
   @RequirePermissions('books:read')
   @Cacheable((req) => `book:${req.params.id}`, TTL.BOOK_DETAIL)
-  async getBook(@Param('id') id: string) {
+  async getBook(@Param('id', ParseIntPipe) id: number) {
     const book = await this.booksService.getBook(id);
     return { success: true, data: book };
   }
@@ -97,7 +101,7 @@ export class BooksController {
   @Patch(':id')
   @RequirePermissions('books:update')
   @CacheEvict((req) => `book:${req.params.id}`, 'books:list:*')
-  async updateBook(@Param('id') id: string, @Body() dto: UpdateBookDto) {
+  async updateBook(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateBookDto) {
     const book = await this.booksService.updateBook(id, dto);
     return { success: true, data: book };
   }
@@ -106,10 +110,11 @@ export class BooksController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('books:delete')
   @CacheEvict((req) => `book:${req.params.id}`, 'books:list:*')
-  async deleteBook(@Param('id') id: string) {
+  async deleteBook(@Param('id', ParseIntPipe) id: number) {
     await this.booksService.deleteBook(id);
   }
 
+  // memoryStorage keeps the upload in RAM so sharp can process it without a temp file
   @Post(':id/image')
   @RequirePermissions('books:image:upload')
   @UseInterceptors(
@@ -124,7 +129,7 @@ export class BooksController {
       },
     }),
   )
-  async uploadBookImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  async uploadBookImage(@Param('id', ParseIntPipe) id: number, @UploadedFile() file: Express.Multer.File) {
     const imageUrl = await this.booksService.saveBookImage(file, id);
     const book = await this.booksService.updateBookImage(id, imageUrl);
     return { success: true, data: book };
