@@ -22,6 +22,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    // Headers already sent (e.g. session middleware flushed the response before an error)
+    // — log only, do not attempt a second response which would crash the process
+    if (response.headersSent) {
+      if (exception instanceof Error) {
+        this.logger.error(`Error after response already sent: ${exception.message}`, exception.stack);
+      }
+      return;
+    }
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
     let code = 'INTERNAL_SERVER_ERROR';

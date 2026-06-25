@@ -78,7 +78,8 @@ export class CacheService implements OnModuleDestroy {
     try {
       const keys = await this.client.keys(pattern);
       if (keys.length > 0) {
-        await this.client.del(...keys);
+        // ioredis del accepts an array directly — spread can hit argument limit on large key sets
+        await this.client.del(keys);
       }
     } catch {}
   }
