@@ -28,18 +28,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Req() req: Request, @Body() dto: LoginDto) {
     const user = await this.authService.login(dto);
-    // Store user in session — express-session persists this to Redis automatically
     req.session['user'] = user;
+    // Explicitly save so the Set-Cookie header is guaranteed before response is sent
+    await new Promise<void>((resolve, reject) =>
+      req.session.save((err) => (err ? reject(err) : resolve())),
+    );
     return { success: true, data: user };
   }
 
   @Post('google/callback')
   @HttpCode(HttpStatus.OK)
   async googleCallback(@Req() req: Request, @Body() dto: GoogleCallbackDto) {
-    // Frontend sends the Google ID token obtained from Google Sign-In SDK
-    // Backend verifies it with Google's tokeninfo API (no redirect flow needed)
     const user = await this.authService.googleAuth(dto.id_token);
     req.session['user'] = user;
+    await new Promise<void>((resolve, reject) =>
+      req.session.save((err) => (err ? reject(err) : resolve())),
+    );
     return { success: true, data: user };
   }
 
