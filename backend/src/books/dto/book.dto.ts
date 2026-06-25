@@ -24,8 +24,9 @@ export class CreateBookDto {
   published_year?: number;
 
   @IsOptional()
-  @IsString()
-  category_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  category_id?: number;
 
   @IsOptional()
   @IsString()
@@ -74,8 +75,9 @@ export class UpdateBookDto {
   published_year?: number;
 
   @IsOptional()
-  @IsString()
-  category_id?: string;
+  @Type(() => Number)
+  @IsInt()
+  category_id?: number;
 
   @IsOptional()
   @IsString()
