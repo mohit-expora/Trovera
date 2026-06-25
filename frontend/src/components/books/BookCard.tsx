@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { BookOpen } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@trovera/ui";
+import { Badge } from "@trovera/ui";
 import { BookStatusBadge } from "./BookStatusBadge";
 import { cn } from "@/lib/utils";
 import type { Book } from "@/types/book";

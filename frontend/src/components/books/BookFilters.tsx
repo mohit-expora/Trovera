@@ -8,7 +8,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@trovera/ui";
 import { cn } from "@/lib/utils";
 import type { BookCategory, BookFilter } from "@/types/book";
 

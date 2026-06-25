@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@trovera/ui";
 
 interface TrendProps {
   value: number;

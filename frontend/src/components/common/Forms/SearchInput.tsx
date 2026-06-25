@@ -2,8 +2,8 @@
 
 import { useRef, useEffect, type ChangeEvent } from "react";
 import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@trovera/ui";
+import { Button } from "@trovera/ui";
 import { cn } from "@/lib/utils";
 
 interface SearchInputProps {

@@ -1,8 +1,8 @@
 import * as React from "react";
 import { cn, formatDate } from "@/lib/utils";
 import type { Transaction, TransactionStatus } from "@/types/transaction";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@trovera/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@trovera/ui";
 
 interface RecentTransactionsProps {
   transactions: Transaction[];

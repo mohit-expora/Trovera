@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trovera/ui";
 import type { FineStatus } from "@/types/transaction";
 
 interface FinesBadgeProps {

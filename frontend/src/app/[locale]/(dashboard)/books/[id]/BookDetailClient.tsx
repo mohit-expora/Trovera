@@ -6,9 +6,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, BookOpen, Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@trovera/ui";
+import { Badge } from "@trovera/ui";
+import { Separator } from "@trovera/ui";
 import {
   Dialog,
   DialogContent,
@@ -16,8 +16,8 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
+} from "@trovera/ui";
+import { Card, CardContent } from "@trovera/ui";
 import { BookStatusBadge } from "@/components/books/BookStatusBadge";
 import { BookForm } from "@/components/books/BookForm";
 import { PermissionGate } from "@/components/common/PermissionGate";

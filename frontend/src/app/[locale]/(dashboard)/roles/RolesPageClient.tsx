@@ -3,17 +3,17 @@
 import { useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import { Switch } from "@trovera/ui";
+import { Badge } from "@trovera/ui";
+import { Skeleton } from "@trovera/ui";
+import { Separator } from "@trovera/ui";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "@/components/ui/card";
+} from "@trovera/ui";
 import { api } from "@/lib/api";
 import type { ApiSuccess } from "@/types/api";
 import type { UserRole } from "@/types/user";

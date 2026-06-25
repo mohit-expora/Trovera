@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@trovera/ui";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {

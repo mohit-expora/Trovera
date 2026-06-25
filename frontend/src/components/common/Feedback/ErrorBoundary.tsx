@@ -2,7 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@trovera/ui";
 import { errorReporter } from "@/lib/error-reporter";
 
 interface Props {

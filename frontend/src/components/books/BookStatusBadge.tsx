@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@trovera/ui";
 import type { Book } from "@/types/book";
 
 interface BookStatusBadgeProps {

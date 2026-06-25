@@ -3,8 +3,8 @@ import Image from "next/image";
 import { BookOpen, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Book } from "@/types/book";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@trovera/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@trovera/ui";
 
 interface LowStockAlertProps {
   books: Book[];

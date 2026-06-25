@@ -5,19 +5,19 @@ import { toast } from "sonner";
 import { PermissionGate } from "@/components/common/PermissionGate";
 import { ConfirmDialog } from "@/components/common/Modal/ConfirmDialog";
 import { TablePagination } from "@/components/common/DataTable/TablePagination";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@trovera/ui";
+import { Badge } from "@trovera/ui";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
+import { Label } from "@trovera/ui";
+import { Skeleton } from "@trovera/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@trovera/ui";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from "@trovera/ui";
 import { useMembers, useMemberMutations } from "@/hooks/useMembers";
 import { useAuthStore } from "@/store/authStore";
 import { getInitials, formatDate } from "@/lib/utils";

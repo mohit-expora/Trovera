@@ -11,8 +11,8 @@ import { useAuthStore } from "@/store/authStore";
 import { useAuth } from "@/hooks/useAuth";
 import { getInitials } from "@/lib/utils";
 import { LOCALES } from "@/config/theme";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@trovera/ui";
+import { Avatar, AvatarImage, AvatarFallback } from "@trovera/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@trovera/ui";
 import { api } from "@/lib/api";
 
 const SECTION_LABELS: Record<string, string> = {

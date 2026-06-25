@@ -7,7 +7,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@trovera/ui";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];

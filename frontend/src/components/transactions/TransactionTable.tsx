@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@trovera/ui";
+import { Button } from "@trovera/ui";
+import { Skeleton } from "@trovera/ui";
 import { PermissionGate } from "@/components/common/PermissionGate";
 import { formatDate } from "@/lib/utils";
 import type { Transaction, TransactionStatus } from "@/types/transaction";

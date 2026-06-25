@@ -9,14 +9,14 @@ import { cn } from "@/lib/utils";
 import { navItems } from "@/config/navigation";
 import { useUIStore } from "@/store/uiStore";
 import { PermissionGate } from "@/components/common/PermissionGate";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from "@trovera/ui";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@trovera/ui";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from "@trovera/ui";
 
 interface SidebarNavItemProps {
   href: string;

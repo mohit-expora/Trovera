@@ -7,15 +7,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@trovera/ui";
 import { FormFieldWrapper } from "@/components/common/Forms/FormField";
 import { ImageUpload } from "@/components/common/Forms/ImageUpload";
 import { PermissionGate } from "@/components/common/PermissionGate";

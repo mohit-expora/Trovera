@@ -7,15 +7,15 @@ import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { IssueBookModal } from "@/components/transactions/IssueBookModal";
 import { ReturnBookModal } from "@/components/transactions/ReturnBookModal";
 import { TablePagination } from "@/components/common/DataTable/TablePagination";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@trovera/ui";
 import { useTransactions, useTransactionMutations } from "@/hooks/useTransactions";
 import type { Transaction, TransactionStatus } from "@/types/transaction";
 import type { PaginatedResponse } from "@/types/api";

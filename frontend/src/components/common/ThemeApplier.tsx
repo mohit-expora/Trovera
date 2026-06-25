@@ -5,26 +5,22 @@ import { useTheme } from "next-themes";
 import { useUIStore } from "@/store/uiStore";
 import { COLOR_PALETTES, DEFAULT_PALETTE_ID } from "@/config/theme";
 
-// True pastels: high lightness (78-86%), low-medium saturation (30-42%)
+// bg + card are always neutral white/black.
+// Palette only affects primary, secondary, accent, border, ring, muted.
 const LIGHT = {
-  bg:         { s: 30,  l: 94  },   // clearly tinted — not white
-  card:       { s: 5,   l: 100 },   // pure white cards float above tinted bg
-  muted:      { s: 28,  l: 92  },
-  border:     { s: 22,  l: 86  },
-  primary:    { s: 42,  l: 72  },   // slightly richer pastel
-  secondary:  { s: 45,  l: 78  },
-  accent:     { s: 45,  l: 80  },
+  border:     { s: 18,  l: 86  },
+  muted:      { s: 12,  l: 96  },
+  primary:    { s: 55,  l: 50  },
+  secondary:  { s: 45,  l: 60  },
+  accent:     { s: 50,  l: 55  },
 };
 
-// Dark pastels: desaturated, medium lightness on dark backgrounds
 const DARK = {
-  bg:         { s: 8,   l: 10  },
-  card:       { s: 8,   l: 13  },
+  border:     { s: 14,  l: 22  },
   muted:      { s: 8,   l: 18  },
-  border:     { s: 10,  l: 22  },
-  primary:    { s: 28,  l: 62  },
-  secondary:  { s: 24,  l: 48  },
-  accent:     { s: 24,  l: 55  },
+  primary:    { s: 45,  l: 65  },
+  secondary:  { s: 35,  l: 52  },
+  accent:     { s: 38,  l: 58  },
 };
 
 function clamp(v: number, lo: number, hi: number) {
@@ -50,17 +46,19 @@ function applyPalette(
   const el = document.documentElement;
   const C  = isDark ? DARK : LIGHT;
 
-  // Backgrounds & surfaces — use primary hue for cohesive tint
-  el.style.setProperty("--background",         hv(ph, C.bg.s,     clamp(C.bg.l     + b, 5,  99)));
-  el.style.setProperty("--foreground",         hv(ph, 8,           isDark ? 92 : 15));
-  el.style.setProperty("--card",               hv(ph, C.card.s,   clamp(C.card.l   + b, 5,  100)));
-  el.style.setProperty("--card-foreground",    hv(ph, 8,           isDark ? 92 : 15));
-  el.style.setProperty("--popover",            hv(ph, C.card.s,   clamp(C.card.l   + b, 5,  100)));
-  el.style.setProperty("--popover-foreground", hv(ph, 8,           isDark ? 92 : 15));
-  el.style.setProperty("--muted",              hv(ph, C.muted.s,  clamp(C.muted.l  + b, 5,  99)));
-  el.style.setProperty("--muted-foreground",   hv(ph, 8,           isDark ? 60 : 48));
-  el.style.setProperty("--border",             hv(ph, C.border.s, clamp(C.border.l + b, 5,  97)));
-  el.style.setProperty("--input",              hv(ph, C.border.s, clamp(C.border.l + b, 5,  97)));
+  // Background + card: always pure white (light) / pure black (dark)
+  el.style.setProperty("--background",         isDark ? "0 0% 4%"  : "0 0% 100%");
+  el.style.setProperty("--foreground",         isDark ? "0 0% 92%" : "0 0% 8%");
+  el.style.setProperty("--card",               isDark ? "0 0% 8%"  : "0 0% 100%");
+  el.style.setProperty("--card-foreground",    isDark ? "0 0% 92%" : "0 0% 8%");
+  el.style.setProperty("--popover",            isDark ? "0 0% 8%"  : "0 0% 100%");
+  el.style.setProperty("--popover-foreground", isDark ? "0 0% 92%" : "0 0% 8%");
+
+  // Muted + border: palette-hued so they shift with palette selection
+  el.style.setProperty("--muted",              hv(ph, C.muted.s,  clamp(C.muted.l  + b, 5, 99)));
+  el.style.setProperty("--muted-foreground",   hv(ph, 10,          isDark ? 58 : 46));
+  el.style.setProperty("--border",             hv(ph, C.border.s, clamp(C.border.l + b, 5, 97)));
+  el.style.setProperty("--input",              hv(ph, C.border.s, clamp(C.border.l + b, 5, 97)));
 
   // Accent colors — true pastel: low-medium saturation × user slider
   el.style.setProperty("--primary",            hv(ph, C.primary.s   * sf, clamp(C.primary.l   + b, 30, 93)));

@@ -11,11 +11,11 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@trovera/ui";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
+import { Label } from "@trovera/ui";
+import { Skeleton } from "@trovera/ui";
 import { api } from "@/lib/api";
 import { useTransactionMutations } from "@/hooks/useTransactions";
 import type { Transaction } from "@/types/transaction";

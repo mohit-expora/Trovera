@@ -6,8 +6,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@trovera/ui";
+import { Badge } from "@trovera/ui";
 import { DataTable } from "@/components/common/DataTable/DataTable";
 import { TablePagination } from "@/components/common/DataTable/TablePagination";
 import { TableSortHeader } from "@/components/common/DataTable/TableSortHeader";

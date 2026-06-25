@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@trovera/ui";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { PaginatedMeta } from "@/types/api";
 

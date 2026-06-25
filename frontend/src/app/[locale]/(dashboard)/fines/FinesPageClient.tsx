@@ -5,17 +5,17 @@ import { toast } from "sonner";
 import { PermissionGate } from "@/components/common/PermissionGate";
 import { FinesBadge } from "@/components/transactions/FinesBadge";
 import { TablePagination } from "@/components/common/DataTable/TablePagination";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
+import { Label } from "@trovera/ui";
+import { Skeleton } from "@trovera/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@trovera/ui";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from "@trovera/ui";
 import { useFines, useFineMutations } from "@/hooks/useTransactions";
 import { formatDate } from "@/lib/utils";
 import type { Fine, FineStatus } from "@/types/transaction";

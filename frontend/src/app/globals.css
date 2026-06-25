@@ -5,57 +5,57 @@
 @layer base {
   /* ── Light Mode ───────────────────────────────────────────────────────────── */
   :root {
-    --background: 270 30% 94%;
-    --foreground: 240 10% 15%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 0 0% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
-    --primary: 270 42% 72%;
-    --primary-foreground: 270 10% 20%;
-    --secondary: 220 45% 78%;
-    --secondary-foreground: 220 10% 20%;
-    --muted: 270 28% 92%;
-    --muted-foreground: 240 10% 48%;
-    --accent: 340 45% 80%;
-    --accent-foreground: 340 10% 20%;
-    --destructive: 0 55% 68%;
-    --destructive-foreground: 0 10% 98%;
-    --success: 145 40% 65%;
-    --success-foreground: 145 10% 15%;
-    --warning: 45 75% 72%;
-    --warning-foreground: 45 10% 15%;
-    --border: 270 22% 86%;
-    --input: 270 22% 86%;
-    --ring: 270 42% 72%;
+    --popover-foreground: 0 0% 8%;
+    --primary: 270 55% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 45% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 270 12% 96%;
+    --muted-foreground: 270 10% 46%;
+    --accent: 340 50% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 8%;
+    --border: 270 18% 86%;
+    --input: 270 18% 86%;
+    --ring: 270 55% 50%;
     --radius: 0.75rem;
   }
 
   /* ── Dark Mode ────────────────────────────────────────────────────────────── */
   .dark {
-    --background: 240 10% 10%;
-    --foreground: 240 10% 92%;
-    --card: 240 10% 13%;
-    --card-foreground: 240 10% 92%;
-    --popover: 240 10% 13%;
-    --popover-foreground: 240 10% 92%;
-    --primary: 270 28% 62%;
-    --primary-foreground: 270 10% 96%;
-    --secondary: 220 24% 48%;
-    --secondary-foreground: 220 10% 92%;
-    --muted: 240 10% 18%;
-    --muted-foreground: 240 10% 60%;
-    --accent: 340 24% 55%;
-    --accent-foreground: 340 10% 92%;
-    --destructive: 0 38% 50%;
-    --destructive-foreground: 0 10% 96%;
-    --success: 145 22% 40%;
-    --success-foreground: 145 10% 92%;
-    --warning: 45 38% 45%;
-    --warning-foreground: 45 10% 92%;
-    --border: 240 10% 22%;
-    --input: 240 10% 22%;
-    --ring: 270 28% 62%;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 92%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 92%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 92%;
+    --primary: 270 45% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 35% 52%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 270 8% 18%;
+    --muted-foreground: 270 8% 58%;
+    --accent: 340 38% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 50% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 80% 45%;
+    --warning-foreground: 0 0% 8%;
+    --border: 270 14% 22%;
+    --input: 270 14% 22%;
+    --ring: 270 45% 65%;
   }
 }
 
@@ -67,42 +67,6 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     overflow-x: hidden;
-  }
-
-  /* ── Decorative blobs — more visible in light mode ───────────────────────── */
-  body::before,
-  body::after {
-    content: "";
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Top-right primary blob */
-  body::before {
-    top: -25%;
-    right: -12%;
-    width: min(65vw, 750px);
-    height: min(65vw, 750px);
-    background: radial-gradient(circle at center,
-      hsl(var(--primary) / 0.28) 0%,
-      hsl(var(--primary) / 0.10) 45%,
-      transparent 70%
-    );
-  }
-
-  /* Bottom-left accent blob */
-  body::after {
-    bottom: -25%;
-    left: -12%;
-    width: min(60vw, 680px);
-    height: min(60vw, 680px);
-    background: radial-gradient(circle at center,
-      hsl(var(--accent) / 0.22) 0%,
-      hsl(var(--accent) / 0.08) 45%,
-      transparent 70%
-    );
   }
 
   /* Fluid typography */

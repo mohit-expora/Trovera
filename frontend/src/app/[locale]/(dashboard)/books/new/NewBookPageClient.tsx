@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@trovera/ui";
 import { BookForm } from "@/components/books/BookForm";
 import { PermissionGate } from "@/components/common/PermissionGate";
 import type { Book, BookCategory } from "@/types/book";

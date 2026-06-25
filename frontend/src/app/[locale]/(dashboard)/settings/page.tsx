@@ -9,19 +9,19 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
+} from "@trovera/ui";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
+import { Label } from "@trovera/ui";
+import { Separator } from "@trovera/ui";
+import { Slider } from "@trovera/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@trovera/ui";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
 import { api } from "@/lib/api";
@@ -161,12 +161,12 @@ function AppearanceSection() {
     saturation !== DEFAULT_SATURATION ||
     brightness !== DEFAULT_BRIGHTNESS;
 
-  // True pastel base values — mirrors ThemeApplier constants
+  // Mirrors ThemeApplier LIGHT / DARK primary/secondary/accent values
   const sf = saturation / 100;
   const b  = brightness;
-  const [pS, pL]  = isDark ? [28, 62] : [38, 78];
-  const [s2S, s2L]= isDark ? [24, 48] : [42, 83];
-  const [aS, aL]  = isDark ? [24, 55] : [42, 85];
+  const [pS, pL]  = isDark ? [45, 65] : [55, 50];
+  const [s2S, s2L]= isDark ? [35, 52] : [45, 60];
+  const [aS, aL]  = isDark ? [38, 58] : [50, 55];
 
   function swatchColor(h: number, baseS: number, baseL: number) {
     const s = Math.min(100, Math.max(0, Math.round(baseS * sf)));

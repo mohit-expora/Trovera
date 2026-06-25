@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Mail, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@trovera/ui";
+import { Input } from "@trovera/ui";
+import { Label } from "@trovera/ui";
+import { Card, CardContent } from "@trovera/ui";
 import { api } from "@/lib/api";
 
 type VerifyState = "idle" | "verifying" | "verified" | "error";

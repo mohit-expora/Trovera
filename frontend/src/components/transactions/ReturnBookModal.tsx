@@ -10,11 +10,11 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from "@trovera/ui";
+import { Button } from "@trovera/ui";
+import { Label } from "@trovera/ui";
+import { Badge } from "@trovera/ui";
+import { Separator } from "@trovera/ui";
 import { useTransactionMutations } from "@/hooks/useTransactions";
 import { formatDate } from "@/lib/utils";
 import type { Transaction } from "@/types/transaction";
