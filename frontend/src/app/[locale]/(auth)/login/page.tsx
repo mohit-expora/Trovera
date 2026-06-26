@@ -1,7 +1,11 @@
+import { redirect } from "next/navigation";
+import { getServerUser } from "@/lib/auth-actions";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
-export default function LoginPage() {
+export default async function LoginPage({ params }: { params: { locale: string } }) {
+  const user = await getServerUser();
+  if (user) redirect(`/${params.locale}/dashboard`);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
