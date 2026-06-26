@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { mutate } from "swr";
 import { useTranslations } from "next-intl";
 import { Menu, Sun, Moon, Monitor, LogOut, User, ChevronDown, Globe } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -183,6 +184,8 @@ export function Header() {
     } catch {
       // Ignore errors — always clear the local state
     } finally {
+      // Clear all SWR cached data so the next login starts fresh
+      await mutate(() => true, undefined, { revalidate: false });
       storeLogout();
       const segments = pathname.split("/").filter(Boolean);
       const locale = segments[0] ?? "en";

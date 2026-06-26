@@ -13,8 +13,9 @@ export function SWRProvider({ children }: { children: ReactNode }) {
     <SWRConfig
       value={{
         fetcher: swrFetcher,
-        dedupingInterval: 30_000,
+        dedupingInterval: 2_000,
         revalidateOnFocus: false,
+        revalidateIfStale: true,
         revalidateOnReconnect: true,
         errorRetryCount: 3,
         onErrorRetry(error: AxiosError, key, config, revalidate, { retryCount }) {

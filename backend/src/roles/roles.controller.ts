@@ -38,10 +38,17 @@ export class RolesController {
     return { success: true, data: { role, permissions: Array.from(ROLE_PERMISSIONS[role] || []) } };
   }
 
-  // Stub — returns the requested change but does not persist it
   @Patch(':role/permissions')
   @RequirePermissions('roles:permission:update')
   updateRolePermissions(@Param('role') role: UserRole, @Body() dto: UpdatePermissionDto) {
-    return { success: true, data: { role, permission: dto.permission, granted: dto.granted } };
+    const perms = ROLE_PERMISSIONS[role];
+    if (perms) {
+      if (dto.granted) {
+        perms.add(dto.permission);
+      } else {
+        perms.delete(dto.permission);
+      }
+    }
+    return { success: true, data: { role, permissions: Array.from(ROLE_PERMISSIONS[role] || []) } };
   }
 }

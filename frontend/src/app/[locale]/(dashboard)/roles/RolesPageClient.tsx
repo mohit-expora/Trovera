@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import useSWR, { mutate as globalMutate } from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { toast } from "sonner";
 import { Switch } from "@trovera/ui";
 import { Badge } from "@trovera/ui";
@@ -30,7 +30,7 @@ interface RolePermission {
 
 interface RoleData {
   role: UserRole;
-  permissions: RolePermission[];
+  permissions: string[]; // backend returns plain code strings, not objects
 }
 
 // ── Canonical permissions list ─────────────────────────────────────────────
@@ -96,7 +96,7 @@ function RolePanel({
   onToggle: (code: string, enabled: boolean) => Promise<void>;
 }) {
   const isSuperAdmin = role === "super_admin";
-  const assignedCodes = new Set(roleData?.permissions.map((p) => p.code) ?? []);
+  const assignedCodes = new Set(roleData?.permissions ?? []);
 
   const grouped = CATEGORY_ORDER.reduce<Record<string, RolePermission[]>>((acc, cat) => {
     acc[cat] = ALL_PERMISSIONS.filter((p) => p.category === cat);
@@ -174,6 +174,7 @@ const ROLES: UserRole[] = ["super_admin", "librarian", "member"];
 
 export function RolesPageClient() {
   const [toggling, setToggling] = useState<string | null>(null);
+  const { mutate } = useSWRConfig();
 
   const { data: superAdminData, isLoading: saLoading } = useSWR<ApiSuccess<RoleData>>(
     "/roles/super_admin/permissions"
@@ -197,7 +198,15 @@ export function RolesPageClient() {
     setToggling(key);
     try {
       await api.patch(`/roles/${role}/permissions`, { permission: code, granted: enabled });
-      await globalMutate(`/roles/${role}/permissions`);
+      await mutate(
+        `/roles/${role}/permissions`,
+        (current: ApiSuccess<RoleData> | undefined) => {
+          const perms = current?.data?.permissions ?? [];
+          const updated = enabled ? [...perms, code] : perms.filter((p) => p !== code);
+          return { success: true, data: { role, permissions: updated } } as ApiSuccess<RoleData>;
+        },
+        { revalidate: false },
+      );
       toast.success(`Permission ${enabled ? "granted" : "revoked"}.`);
     } catch {
       toast.error("Failed to update permission.");
