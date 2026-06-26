@@ -196,11 +196,7 @@ export function RolesPageClient() {
     if (toggling) return;
     setToggling(key);
     try {
-      if (enabled) {
-        await api.post(`/roles/${role}/permissions`, { permission_code: code });
-      } else {
-        await api.delete(`/roles/${role}/permissions/${encodeURIComponent(code)}`);
-      }
+      await api.patch(`/roles/${role}/permissions`, { permission: code, granted: enabled });
       await globalMutate(`/roles/${role}/permissions`);
       toast.success(`Permission ${enabled ? "granted" : "revoked"}.`);
     } catch {
