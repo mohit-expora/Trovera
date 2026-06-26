@@ -35,7 +35,7 @@ export function BookDetailClient({ initialBook, categories }: BookDetailClientPr
   const locale = useLocale();
   const t = useTranslations("books");
 
-  const { book } = useBook(initialBook.id, initialBook);
+  const { book, mutate: mutateBook } = useBook(initialBook.id, initialBook);
   const displayBook = book ?? initialBook;
 
   const { deleteBook } = useBookMutations();
@@ -59,7 +59,7 @@ export function BookDetailClient({ initialBook, categories }: BookDetailClientPr
 
   const handleEditSuccess = (updated: Book) => {
     setEditOpen(false);
-    toast.success("Book updated successfully");
+    mutateBook({ success: true, data: updated });
   };
 
   return (

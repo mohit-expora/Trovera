@@ -14,7 +14,7 @@ import { Button } from "@trovera/ui";
 import { Input } from "@trovera/ui";
 import { Label } from "@trovera/ui";
 import { Separator } from "@trovera/ui";
-import { Slider } from "@trovera/ui";
+import { Slider } from "@/components/ui/Slider";
 import {
   Select,
   SelectContent,
